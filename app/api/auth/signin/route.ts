@@ -49,14 +49,21 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Now get gym details
+    // Now get complete gym details
     const { data: gymData, error: gymDataError } = await supabaseAdmin
       .from("gyms")
-      .select("id, name, is_active")
+      .select("*")
       .eq("id", gymAdmin.gym_id)
       .single();
 
     console.log('🏋️ Gym details:', gymData);
+    
+    if (gymDataError || !gymData) {
+      return NextResponse.json(
+        { error: "Gym not found" },
+        { status: 404 }
+      );
+    }
 
     // Set session cookie
     const cookieStore = await cookies();
@@ -75,9 +82,18 @@ export async function POST(request: NextRequest) {
         metadata: data.user.user_metadata,
       },
       gym: {
-        id: gymData?.id,
-        name: gymData?.name,
-        is_active: gymData?.is_active,
+        id: gymData.id,
+        name: gymData.name,
+        description: gymData.description,
+        address: gymData.address,
+        phone: gymData.phone,
+        email: gymData.email,
+        logo_url: gymData.logo_url,
+        monthly_fee: gymData.monthly_fee,
+        sinpe_phone: gymData.sinpe_phone,
+        is_active: gymData.is_active,
+        created_at: gymData.created_at,
+        updated_at: gymData.updated_at,
         role: gymAdmin.role,
       },
     });
