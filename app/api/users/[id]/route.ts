@@ -4,7 +4,7 @@ import { validateApiKey, createUnauthorizedResponse } from "@/lib/api-auth";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   // Validate API key
   if (!validateApiKey(request)) {
@@ -12,7 +12,7 @@ export async function GET(
   }
 
   try {
-    const userId = params.id;
+    const { id: userId } = await params;
 
     // Validate UUID format
     const uuidRegex =
@@ -73,7 +73,7 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   // Validate API key
   if (!validateApiKey(request)) {
@@ -81,7 +81,7 @@ export async function PUT(
   }
 
   try {
-    const userId = params.id;
+    const { id: userId } = await params;
     const { uid, firstName, lastName, phone, dateOfBirth, profileImageUrl } =
       await request.json();
 
@@ -161,7 +161,7 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   // Validate API key
   if (!validateApiKey(request)) {
@@ -169,7 +169,7 @@ export async function DELETE(
   }
 
   try {
-    const userId = params.id;
+    const { id: userId } = await params;
 
     // Validate UUID format
     const uuidRegex =
