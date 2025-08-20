@@ -64,6 +64,7 @@ function UploadPaymentContent() {
       const formData = new FormData();
       formData.append('file', file);
       formData.append('membershipId', membershipId);
+      if (paymentId) formData.append('paymentId', paymentId);
       formData.append('sinpeReference', sinpeReference);
       formData.append('sinpePhone', sinpePhone);
 

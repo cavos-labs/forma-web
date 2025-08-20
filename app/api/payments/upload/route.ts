@@ -12,6 +12,7 @@ export async function POST(request: NextRequest) {
     const formData = await request.formData();
     const file = formData.get('file') as File;
     const membershipId = formData.get('membershipId') as string;
+    const paymentId = formData.get('paymentId') as string;
     const sinpeReference = formData.get('sinpeReference') as string;
     const sinpePhone = formData.get('sinpePhone') as string;
 
@@ -125,30 +126,56 @@ export async function POST(request: NextRequest) {
       .from('payment-proofs')
       .getPublicUrl(fileName);
 
-    // Create payment record
-    const { data: payment, error: paymentError } = await supabaseAdmin
-      .from("payments")
-      .insert({
-        membership_id: membershipId,
-        amount: membership.monthly_fee,
-        payment_method: 'sinpe',
-        sinpe_reference: sinpeReference || null,
-        sinpe_phone: sinpePhone || null,
-        payment_proof_url: publicUrl,
-        status: 'pending',
-      })
-      .select()
-      .single();
+    // Create or update payment record
+    let payment;
+    let paymentError;
+    
+    if (paymentId) {
+      // Update existing payment
+      const { data: updateData, error: updateError } = await supabaseAdmin
+        .from("payments")
+        .update({
+          sinpe_reference: sinpeReference || null,
+          sinpe_phone: sinpePhone || null,
+          payment_proof_url: publicUrl,
+          status: 'pending',
+        })
+        .eq('id', paymentId)
+        .eq('membership_id', membershipId) // Security check
+        .select()
+        .single();
+      
+      payment = updateData;
+      paymentError = updateError;
+    } else {
+      // Create new payment
+      const { data: insertData, error: insertError } = await supabaseAdmin
+        .from("payments")
+        .insert({
+          membership_id: membershipId,
+          amount: membership.monthly_fee,
+          payment_method: 'sinpe',
+          sinpe_reference: sinpeReference || null,
+          sinpe_phone: sinpePhone || null,
+          payment_proof_url: publicUrl,
+          status: 'pending',
+        })
+        .select()
+        .single();
+      
+      payment = insertData;
+      paymentError = insertError;
+    }
 
     if (paymentError) {
-      console.error("Payment creation error:", paymentError);
-      // Clean up uploaded file if payment creation fails
+      console.error("Payment operation error:", paymentError);
+      // Clean up uploaded file if payment operation fails
       await supabaseAdmin.storage
         .from('payment-proofs')
         .remove([fileName]);
       
       return NextResponse.json(
-        { error: "Failed to create payment record" },
+        { error: paymentId ? "Failed to update payment record" : "Failed to create payment record" },
         { status: 500 }
       );
     }
