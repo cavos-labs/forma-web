@@ -8,11 +8,15 @@ export interface PaymentProofEmailData {
   gymName: string;
   monthlyFee: number;
   membershipId: string;
+  paymentId: string;
 }
 
 export async function sendPaymentProofEmail(data: PaymentProofEmailData) {
   try {
-    const { userEmail, userName, gymName, monthlyFee, membershipId } = data;
+    const { userEmail, userName, gymName, monthlyFee, membershipId, paymentId } = data;
+    
+    // Create upload link
+    const uploadUrl = `https://formacr.com/upload-payment?membershipId=${membershipId}&paymentId=${paymentId}`;
 
     const response = await resend.emails.send({
       from: "Forma App <adrianvrj@cavos.xyz>",
@@ -73,14 +77,24 @@ export async function sendPaymentProofEmail(data: PaymentProofEmailData) {
                 
                 <!-- Instrucciones -->
                 <div style="padding: 30px;">
-                  <h3 style="color: #373737; margin: 0 0 20px 0; font-size: 20px; font-weight: 600;"> Cómo Enviar el Comprobante</h3>
+                  <h3 style="color: #373737; margin: 0 0 20px 0; font-size: 20px; font-weight: 600;">📋 Cómo Enviar el Comprobante</h3>
                   <div style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border-radius: 8px; padding: 25px;">
-                    <ol style="color: #373737; line-height: 1.8; margin: 0; padding-left: 20px; font-size: 16px;">
+                    <ol style="color: #373737; line-height: 1.8; margin: 0 0 25px 0; padding-left: 20px; font-size: 16px;">
                       <li style="margin-bottom: 12px;">Realiza el pago por SINPE Móvil al número del gimnasio</li>
                       <li style="margin-bottom: 12px;">Toma una captura de pantalla del comprobante</li>
-                      <li style="margin-bottom: 12px;">Envía la imagen por WhatsApp al administrador del gimnasio</li>
-                      <li style="margin-bottom: 0;">O súbela directamente en la aplicación</li>
+                      <li style="margin-bottom: 0;">Sube la imagen usando el botón de abajo ⬇️</li>
                     </ol>
+                    
+                    <!-- Botón de subir comprobante -->
+                    <div style="text-align: center; margin-top: 25px;">
+                      <a href="${uploadUrl}" style="display: inline-block; background: linear-gradient(135deg, #28a745 0%, #20c997 100%); color: #ffffff; text-decoration: none; padding: 15px 30px; border-radius: 8px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3); transition: transform 0.2s;">
+                        📸 Subir Comprobante de Pago
+                      </a>
+                    </div>
+                    
+                    <p style="text-align: center; color: #666; font-size: 14px; margin: 15px 0 0 0;">
+                      También puedes enviar la imagen por WhatsApp al administrador del gimnasio
+                    </p>
                   </div>
                 </div>
                 

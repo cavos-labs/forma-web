@@ -136,7 +136,32 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Send payment proof email
+    // Create initial payment record (pending)
+    const { data: payment, error: paymentError } = await supabaseAdmin
+      .from("payments")
+      .insert({
+        membership_id: membership.id,
+        amount: finalMonthlyFee,
+        payment_method: 'sinpe',
+        payment_proof_url: `pending-upload-${membership.id}`, // Temporary placeholder
+        status: 'pending',
+      })
+      .select()
+      .single();
+
+    if (paymentError) {
+      console.error("Payment creation error:", paymentError);
+      // If payment creation fails, delete the created user and membership
+      await supabaseAdmin.from("memberships").delete().eq("id", membership.id);
+      await supabaseAdmin.from("users").delete().eq("id", user.id);
+
+      return NextResponse.json(
+        { error: "Failed to create payment record" },
+        { status: 500 }
+      );
+    }
+
+    // Send payment proof email with upload link
     try {
       const responseEmail = await sendPaymentProofEmail({
         userEmail: email,
@@ -144,6 +169,7 @@ export async function POST(request: NextRequest) {
         gymName: gym.name,
         monthlyFee: finalMonthlyFee,
         membershipId: membership.id,
+        paymentId: payment.id,
       });
     } catch (emailError) {
       console.error("Failed to send payment proof email:", emailError);
