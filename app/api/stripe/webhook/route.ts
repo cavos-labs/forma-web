@@ -3,7 +3,7 @@ import { supabaseAdmin } from "@/lib/supabase";
 import Stripe from 'stripe';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2024-06-20',
+  apiVersion: '2025-07-30.basil',
 });
 
 const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET!;
@@ -65,11 +65,15 @@ export async function POST(request: NextRequest) {
     
     case 'invoice.payment_succeeded': {
       // Handle recurring subscription payments
-      const invoice = event.data.object as Stripe.Invoice;
-      const subscriptionId = invoice.subscription as string;
+      const invoice = event.data.object as any;
+      const subscriptionId = invoice.subscription;
       
       try {
         // Get subscription details to find the gym
+        if (!subscriptionId || typeof subscriptionId !== 'string') {
+          console.error('No subscription ID found in invoice');
+          return NextResponse.json({ error: 'No subscription ID' }, { status: 400 });
+        }
         const subscription = await stripe.subscriptions.retrieve(subscriptionId);
         const gymId = subscription.metadata?.gymId;
         
@@ -98,11 +102,15 @@ export async function POST(request: NextRequest) {
     
     case 'invoice.payment_failed': {
       // Handle failed payments
-      const invoice = event.data.object as Stripe.Invoice;
-      const subscriptionId = invoice.subscription as string;
+      const invoice = event.data.object as any;
+      const subscriptionId = invoice.subscription;
       
       try {
         // Get subscription details to find the gym
+        if (!subscriptionId || typeof subscriptionId !== 'string') {
+          console.error('No subscription ID found in failed payment invoice');
+          break;
+        }
         const subscription = await stripe.subscriptions.retrieve(subscriptionId);
         const gymId = subscription.metadata?.gymId;
         
