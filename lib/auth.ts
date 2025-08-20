@@ -44,9 +44,9 @@ export async function verifySession(request: NextRequest) {
         metadata: user.user_metadata,
       },
       gym: {
-        id: gymAdmin.gyms.id,
-        name: gymAdmin.gyms.name,
-        is_active: gymAdmin.gyms.is_active,
+        id: gymAdmin.gyms[0].id,
+        name: gymAdmin.gyms[0].name,
+        is_active: gymAdmin.gyms[0].is_active,
         role: gymAdmin.role,
       }
     }
