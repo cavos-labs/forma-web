@@ -32,33 +32,31 @@ export async function POST(request: NextRequest) {
     // Get user's gym information
     console.log('🔍 Fetching gym data for user:', data.user.id);
     
+    // First get gym admin info
     const { data: gymAdmin, error: gymError } = await supabaseAdmin
       .from("gym_administrators")
-      .select(
-        `
-        gym_id,
-        role,
-        is_active,
-        gyms:gym_id (
-          id,
-          name,
-          is_active
-        )
-      `
-      )
+      .select("gym_id, role, is_active")
       .eq("user_id", data.user.id)
       .eq("is_active", true)
       .single();
 
     console.log('📊 Gym admin data:', gymAdmin);
-    console.log('❌ Gym admin error:', gymError);
-
+    
     if (gymError || !gymAdmin) {
       return NextResponse.json(
         { error: "No gym associated with this account" },
         { status: 403 }
       );
     }
+
+    // Now get gym details
+    const { data: gymData, error: gymDataError } = await supabaseAdmin
+      .from("gyms")
+      .select("id, name, is_active")
+      .eq("id", gymAdmin.gym_id)
+      .single();
+
+    console.log('🏋️ Gym details:', gymData);
 
     // Set session cookie
     const cookieStore = await cookies();
@@ -67,16 +65,6 @@ export async function POST(request: NextRequest) {
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
       maxAge: 60 * 60 * 24 * 7, // 7 days
-    });
-
-    // Extract gym data from the joined table (it comes as an array)
-    const gymData = Array.isArray(gymAdmin.gyms) && gymAdmin.gyms.length > 0 ? gymAdmin.gyms[0] : null;
-    
-    console.log('🏋️ Final gym data being returned:', {
-      id: gymData?.id || gymAdmin.gym_id,
-      name: gymData?.name,
-      is_active: gymData?.is_active,
-      role: gymAdmin.role,
     });
     
     return NextResponse.json({
@@ -87,7 +75,7 @@ export async function POST(request: NextRequest) {
         metadata: data.user.user_metadata,
       },
       gym: {
-        id: gymData?.id || gymAdmin.gym_id,
+        id: gymData?.id,
         name: gymData?.name,
         is_active: gymData?.is_active,
         role: gymAdmin.role,
