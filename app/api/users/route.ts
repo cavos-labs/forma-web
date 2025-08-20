@@ -141,7 +141,6 @@ export async function POST(request: NextRequest) {
         monthlyFee: gym.monthly_fee || 26500.0,
         membershipId: membership.id,
       });
-      console.log("responseEmail", responseEmail);
     } catch (emailError) {
       console.error("Failed to send payment proof email:", emailError);
       // Don't fail the entire request if email fails
