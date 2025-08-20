@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
 import { validateApiKey, createUnauthorizedResponse } from "@/lib/api-auth";
+import { sendPaymentProofEmail } from "@/lib/email";
 
 export async function POST(request: NextRequest) {
   // Validate API key
@@ -68,10 +69,10 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Verify gym exists
+    // Verify gym exists and get gym details
     const { data: gym, error: gymError } = await supabaseAdmin
       .from("gyms")
-      .select("id, monthly_fee")
+      .select("id, name, monthly_fee")
       .eq("id", gymId)
       .single();
 
@@ -115,7 +116,7 @@ export async function POST(request: NextRequest) {
         status: "pending_payment",
         start_date: currentDate,
         end_date: endDate,
-        monthly_fee: 26500.0,
+        monthly_fee: gym.monthly_fee || 26500.0,
       })
       .select()
       .single();
@@ -129,6 +130,22 @@ export async function POST(request: NextRequest) {
         { error: "Failed to create membership record" },
         { status: 500 }
       );
+    }
+
+    // Send payment proof email
+    try {
+      const responseEmail = await sendPaymentProofEmail({
+        userEmail: email,
+        userName: `${firstName} ${lastName}`,
+        gymName: gym.name,
+        monthlyFee: gym.monthly_fee || 26500.0,
+        membershipId: membership.id,
+      });
+      console.log("responseEmail", responseEmail);
+    } catch (emailError) {
+      console.error("Failed to send payment proof email:", emailError);
+      // Don't fail the entire request if email fails
+      // The user is still created successfully
     }
 
     return NextResponse.json({
@@ -152,7 +169,8 @@ export async function POST(request: NextRequest) {
         gracePeriodEnd: membership.grace_period_end,
         monthlyFee: membership.monthly_fee,
       },
-      message: "User and membership registered successfully",
+      message:
+        "User and membership registered successfully. Payment proof email sent.",
     });
   } catch (error) {
     console.error("User registration error:", error);
