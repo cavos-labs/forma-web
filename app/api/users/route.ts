@@ -17,12 +17,13 @@ export async function POST(request: NextRequest) {
       phone,
       dateOfBirth,
       profileImageUrl,
+      gymId, // Add gymId to create the membership
     } = await request.json();
 
     // Validate required fields
-    if (!email || !firstName || !lastName) {
+    if (!email || !firstName || !lastName || !gymId) {
       return NextResponse.json(
-        { error: "Missing required fields: email, firstName, lastName" },
+        { error: "Missing required fields: email, firstName, lastName, gymId" },
         { status: 400 }
       );
     }
@@ -67,6 +68,17 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Verify gym exists
+    const { data: gym, error: gymError } = await supabaseAdmin
+      .from("gyms")
+      .select("id, monthly_fee")
+      .eq("id", gymId)
+      .single();
+
+    if (gymError || !gym) {
+      return NextResponse.json({ error: "Invalid gym ID" }, { status: 400 });
+    }
+
     // Create user record
     const { data: user, error: userError } = await supabaseAdmin
       .from("users")
@@ -90,6 +102,35 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Create membership record
+    const currentDate = new Date();
+    const endDate = new Date(currentDate);
+    endDate.setDate(endDate.getDate() + 30);
+
+    const { data: membership, error: membershipError } = await supabaseAdmin
+      .from("memberships")
+      .insert({
+        user_id: user.id,
+        gym_id: gymId,
+        status: "pending_payment",
+        start_date: currentDate,
+        end_date: endDate,
+        monthly_fee: 26500.0,
+      })
+      .select()
+      .single();
+
+    if (membershipError) {
+      console.error("Membership creation error:", membershipError);
+      // If membership creation fails, delete the created user
+      await supabaseAdmin.from("users").delete().eq("id", user.id);
+
+      return NextResponse.json(
+        { error: "Failed to create membership record" },
+        { status: 500 }
+      );
+    }
+
     return NextResponse.json({
       success: true,
       user: {
@@ -103,7 +144,15 @@ export async function POST(request: NextRequest) {
         profileImageUrl: user.profile_image_url,
         createdAt: user.created_at,
       },
-      message: "User registered successfully",
+      membership: {
+        id: membership.id,
+        status: membership.status,
+        startDate: membership.start_date,
+        endDate: membership.end_date,
+        gracePeriodEnd: membership.grace_period_end,
+        monthlyFee: membership.monthly_fee,
+      },
+      message: "User and membership registered successfully",
     });
   } catch (error) {
     console.error("User registration error:", error);
