@@ -30,6 +30,13 @@ export async function POST(request: NextRequest) {
       const gymId = session.metadata?.gymId;
       const plan = session.metadata?.plan;
       
+      console.log('Checkout session completed:', {
+        sessionId: session.id,
+        gymId,
+        plan,
+        metadata: session.metadata
+      });
+      
       if (!gymId) {
         console.error('No gymId found in session metadata');
         return NextResponse.json({ error: 'No gymId in metadata' }, { status: 400 });
