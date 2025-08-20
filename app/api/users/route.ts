@@ -19,6 +19,7 @@ export async function POST(request: NextRequest) {
       dateOfBirth,
       profileImageUrl,
       gymId, // Add gymId to create the membership
+      monthlyFee, // Optional: custom monthly fee, defaults to gym's monthly_fee
     } = await request.json();
 
     // Validate required fields
@@ -108,6 +109,9 @@ export async function POST(request: NextRequest) {
     const endDate = new Date(currentDate);
     endDate.setDate(endDate.getDate() + 30);
 
+    // Use provided monthlyFee or fall back to gym's default
+    const finalMonthlyFee = monthlyFee && monthlyFee > 0 ? monthlyFee : gym.monthly_fee || 26500.0;
+
     const { data: membership, error: membershipError } = await supabaseAdmin
       .from("memberships")
       .insert({
@@ -116,7 +120,7 @@ export async function POST(request: NextRequest) {
         status: "pending_payment",
         start_date: currentDate,
         end_date: endDate,
-        monthly_fee: gym.monthly_fee || 26500.0,
+        monthly_fee: finalMonthlyFee,
       })
       .select()
       .single();
@@ -138,7 +142,7 @@ export async function POST(request: NextRequest) {
         userEmail: email,
         userName: `${firstName} ${lastName}`,
         gymName: gym.name,
-        monthlyFee: gym.monthly_fee || 26500.0,
+        monthlyFee: finalMonthlyFee,
         membershipId: membership.id,
       });
     } catch (emailError) {
