@@ -69,6 +69,9 @@ function UploadPaymentContent() {
 
       const response = await fetch('/api/payments/upload', {
         method: 'POST',
+        headers: {
+          'x-api-key': process.env.NEXT_PUBLIC_API_KEY || '',
+        },
         body: formData,
       });
 
