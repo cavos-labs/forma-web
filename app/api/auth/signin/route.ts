@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
         gym_id,
         role,
         is_active,
-        gyms (
+        gyms:gym_id (
           id,
           name,
           is_active
@@ -64,6 +64,9 @@ export async function POST(request: NextRequest) {
       maxAge: 60 * 60 * 24 * 7, // 7 days
     });
 
+    // Extract gym data from the joined table (it comes as an array)
+    const gymData = Array.isArray(gymAdmin.gyms) && gymAdmin.gyms.length > 0 ? gymAdmin.gyms[0] : null;
+    
     return NextResponse.json({
       success: true,
       user: {
@@ -72,9 +75,9 @@ export async function POST(request: NextRequest) {
         metadata: data.user.user_metadata,
       },
       gym: {
-        id: gymAdmin.gyms?.[0]?.id,
-        name: gymAdmin.gyms?.[0]?.name,
-        is_active: gymAdmin.gyms?.[0]?.is_active,
+        id: gymData?.id || gymAdmin.gym_id,
+        name: gymData?.name,
+        is_active: gymData?.is_active,
         role: gymAdmin.role,
       },
     });
