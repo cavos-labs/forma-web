@@ -79,7 +79,40 @@ export async function POST(request: NextRequest) {
         upsert: false,
       });
 
-    if (uploadError) {
+    // If bucket doesn't exist, create it and try again
+    if (uploadError && uploadError.message?.includes('Bucket not found')) {
+      console.log('Creating payment-proofs bucket...');
+      const { error: bucketError } = await supabaseAdmin.storage
+        .createBucket('payment-proofs', {
+          public: true,
+          allowedMimeTypes: ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'],
+          fileSizeLimit: 5242880, // 5MB
+        });
+
+      if (bucketError) {
+        console.error("Bucket creation error:", bucketError);
+        return NextResponse.json(
+          { error: "Failed to create storage bucket" },
+          { status: 500 }
+        );
+      }
+
+      // Retry upload
+      const { data: retryUploadData, error: retryUploadError } = await supabaseAdmin.storage
+        .from('payment-proofs')
+        .upload(fileName, buffer, {
+          contentType: file.type,
+          upsert: false,
+        });
+
+      if (retryUploadError) {
+        console.error("Retry file upload error:", retryUploadError);
+        return NextResponse.json(
+          { error: "Failed to upload payment proof after bucket creation" },
+          { status: 500 }
+        );
+      }
+    } else if (uploadError) {
       console.error("File upload error:", uploadError);
       return NextResponse.json(
         { error: "Failed to upload payment proof" },
