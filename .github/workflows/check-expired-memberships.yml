@@ -1,0 +1,49 @@
+name: Check Expired Memberships
+
+on:
+  schedule:
+    # Run every day at 6:00 AM UTC
+    - cron: "0 6 * * *"
+  workflow_dispatch: # Allows manual execution from GitHub
+
+jobs:
+  check-memberships:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run membership check
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          APP_URL: ${{ secrets.APP_URL }}
+        run: |
+          echo "Calling membership check API..."
+          curl -X POST ${{ secrets.APP_URL }}/api/cron/check-expired-memberships \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            -H "Content-Type: application/json" \
+            -w "\nHTTP Status: %{http_code}\nResponse Time: %{time_total}s\n"
+
+          if [ $? -eq 0 ]; then
+            echo "✅ Membership check completed successfully"
+          else
+            echo "❌ Membership check failed"
+            exit 1
+          fi
+
+      - name: Notify on failure
+        if: failure()
+        run: |
+          echo "❌ Membership check job failed!"
+          echo "Check the logs above for more details."
