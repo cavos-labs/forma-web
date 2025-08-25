@@ -1,23 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
 import { validateApiKey, createUnauthorizedResponse } from "@/lib/api-auth";
-import { sendMembershipReminderWhatsApp } from "@/lib/whatsapp";
 
-// CORS headers
-const corsHeaders = {
-  'Access-Control-Allow-Origin': 'https://app.formacr.com',
-  'Access-Control-Allow-Methods': 'GET, POST, PATCH, PUT, DELETE, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization, x-api-key',
-  'Access-Control-Allow-Credentials': 'true',
-};
-
-// Handle preflight requests
-export async function OPTIONS(request: NextRequest) {
-  return new Response(null, {
-    status: 200,
-    headers: corsHeaders,
-  });
-}
 
 export async function GET(request: NextRequest) {
   // Validate API key
@@ -107,7 +91,7 @@ export async function GET(request: NextRequest) {
         success: true,
         payments: [],
         pagination: { limit, offset, total: 0 },
-      }, { headers: corsHeaders });
+      });
     }
 
     // Format the response data
@@ -161,12 +145,12 @@ export async function GET(request: NextRequest) {
         offset,
         total: count || formattedPayments.length,
       },
-    }, { headers: corsHeaders });
+    });
   } catch (error) {
     console.error("Payments fetch error:", error);
     return NextResponse.json(
       { error: "Internal server error" },
-      { status: 500, headers: corsHeaders }
+      { status: 500 }
     );
   }
 }
@@ -190,7 +174,7 @@ export async function PATCH(request: NextRequest) {
     if (!paymentId || !status) {
       return NextResponse.json(
         { error: "Missing required fields: paymentId and status" },
-        { status: 400, headers: corsHeaders }
+        { status: 400 }
       );
     }
 
@@ -199,7 +183,7 @@ export async function PATCH(request: NextRequest) {
     if (!validStatuses.includes(status)) {
       return NextResponse.json(
         { error: "Invalid status. Must be one of: pending, approved, rejected, cancelled" },
-        { status: 400, headers: corsHeaders }
+        { status: 400 }
       );
     }
 
@@ -248,7 +232,7 @@ export async function PATCH(request: NextRequest) {
       console.error("Payment update error:", updateError);
       return NextResponse.json(
         { error: "Failed to update payment" },
-        { status: 500, headers: corsHeaders }
+        { status: 500 }
       );
     }
 
@@ -272,55 +256,6 @@ export async function PATCH(request: NextRequest) {
         })
         .eq("id", payment.membership_id);
 
-      // Fetch membership with user and gym data for notifications
-      const { data: membershipData, error: membershipError } = await supabaseAdmin
-        .from("memberships")
-        .select(`
-          id,
-          user_id,
-          gym_id,
-          users!inner (
-            id,
-            email,
-            first_name,
-            last_name,
-            phone
-          ),
-          gyms!inner (
-            id,
-            name
-          )
-        `)
-        .eq("id", payment.membership_id)
-        .single();
-
-      if (!membershipError && membershipData) {
-        const user = Array.isArray(membershipData.users) ? membershipData.users[0] : membershipData.users;
-        const gym = Array.isArray(membershipData.gyms) ? membershipData.gyms[0] : membershipData.gyms;
-        
-        // Send WhatsApp membership activation notification
-        console.log("🎯 Payment approved, attempting to send WhatsApp notification");
-        console.log("📞 User phone:", user?.phone);
-        console.log("👤 User name:", `${user.first_name} ${user.last_name}`);
-        console.log("🏋️ Gym name:", gym.name);
-        
-        if (user?.phone) {
-          try {
-            console.log("📱 Sending WhatsApp notification for membership activation");
-            const result = await sendMembershipReminderWhatsApp({
-              userPhone: user.phone,
-              userName: `${user.first_name} ${user.last_name}`,
-              gymName: gym.name,
-            });
-            console.log("📤 WhatsApp send result:", result);
-          } catch (whatsappError) {
-            console.error("❌ Failed to send WhatsApp notification:", whatsappError);
-            // Don't fail the entire request if WhatsApp fails
-          }
-        } else {
-          console.log("❌ No phone number found for user, skipping WhatsApp notification");
-        }
-      }
     }
 
     return NextResponse.json({
@@ -343,13 +278,13 @@ export async function PATCH(request: NextRequest) {
         updatedAt: payment.updated_at,
       },
       message: `Payment ${status} successfully`
-    }, { headers: corsHeaders });
+    });
 
   } catch (error) {
     console.error("Payment update error:", error);
     return NextResponse.json(
       { error: "Internal server error" },
-      { status: 500, headers: corsHeaders }
+      { status: 500 }
     );
   }
 }

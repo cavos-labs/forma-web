@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
 import { validateApiKey, createUnauthorizedResponse } from "@/lib/api-auth";
 import { sendPaymentProofEmail } from "@/lib/email";
+import { sendMembershipReminderWhatsApp } from "@/lib/whatsapp";
 
 export async function POST(request: NextRequest) {
   // Validate API key
@@ -175,6 +176,24 @@ export async function POST(request: NextRequest) {
       console.error("Failed to send payment proof email:", emailError);
       // Don't fail the entire request if email fails
       // The user is still created successfully
+    }
+
+    // Send WhatsApp message for membership reminder
+    if (phone) {
+      try {
+        console.log("📱 Sending WhatsApp reminder for new user registration");
+        const whatsappResult = await sendMembershipReminderWhatsApp({
+          userPhone: phone,
+          userName: `${firstName} ${lastName}`,
+          gymName: gym.name,
+        });
+        console.log("📤 WhatsApp send result:", whatsappResult);
+      } catch (whatsappError) {
+        console.error("❌ Failed to send WhatsApp reminder:", whatsappError);
+        // Don't fail the entire request if WhatsApp fails
+      }
+    } else {
+      console.log("❌ No phone number provided, skipping WhatsApp reminder");
     }
 
     return NextResponse.json({
