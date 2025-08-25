@@ -186,6 +186,8 @@ export async function POST(request: NextRequest) {
           userPhone: phone,
           userName: `${firstName} ${lastName}`,
           gymName: gym.name,
+          membershipId: membership.id,
+          paymentId: payment.id,
         });
         console.log("📤 WhatsApp send result:", whatsappResult);
       } catch (whatsappError) {

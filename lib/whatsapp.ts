@@ -13,6 +13,8 @@ export interface MembershipReminderData {
   userPhone: string;
   userName: string;
   gymName: string;
+  membershipId: string;
+  paymentId: string;
 }
 
 export async function sendMembershipReminderWhatsApp(data: MembershipReminderData) {
@@ -29,7 +31,7 @@ export async function sendMembershipReminderWhatsApp(data: MembershipReminderDat
   }
 
   try {
-    const { userPhone, userName, gymName } = data;
+    const { userPhone, userName, gymName, membershipId, paymentId } = data;
     
     // Ensure phone number is in E.164 format (starts with +)
     const formattedPhone = userPhone.startsWith('+') ? userPhone : `+506${userPhone}`;
@@ -43,8 +45,8 @@ export async function sendMembershipReminderWhatsApp(data: MembershipReminderDat
       from: "whatsapp:+19378803700", // Twilio Sandbox WhatsApp number (replace with your number in production)
       to: `whatsapp:${formattedPhone}`,
       contentVariables: JSON.stringify({
-        "1": userName,
-        "2": gymName
+        "1": gymName,
+        "2": `?membershipId=${membershipId}&paymentId=${paymentId}`
       })
     };
 
