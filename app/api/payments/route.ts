@@ -3,6 +3,22 @@ import { supabaseAdmin } from "@/lib/supabase";
 import { validateApiKey, createUnauthorizedResponse } from "@/lib/api-auth";
 import { sendMembershipReminderWhatsApp } from "@/lib/whatsapp";
 
+// CORS headers
+const corsHeaders = {
+  'Access-Control-Allow-Origin': 'https://app.formacr.com',
+  'Access-Control-Allow-Methods': 'GET, POST, PATCH, PUT, DELETE, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization, x-api-key',
+  'Access-Control-Allow-Credentials': 'true',
+};
+
+// Handle preflight requests
+export async function OPTIONS(request: NextRequest) {
+  return new Response(null, {
+    status: 200,
+    headers: corsHeaders,
+  });
+}
+
 export async function GET(request: NextRequest) {
   // Validate API key
   if (!validateApiKey(request)) {
@@ -91,7 +107,7 @@ export async function GET(request: NextRequest) {
         success: true,
         payments: [],
         pagination: { limit, offset, total: 0 },
-      });
+      }, { headers: corsHeaders });
     }
 
     // Format the response data
@@ -145,12 +161,12 @@ export async function GET(request: NextRequest) {
         offset,
         total: count || formattedPayments.length,
       },
-    });
+    }, { headers: corsHeaders });
   } catch (error) {
     console.error("Payments fetch error:", error);
     return NextResponse.json(
       { error: "Internal server error" },
-      { status: 500 }
+      { status: 500, headers: corsHeaders }
     );
   }
 }
@@ -174,7 +190,7 @@ export async function PATCH(request: NextRequest) {
     if (!paymentId || !status) {
       return NextResponse.json(
         { error: "Missing required fields: paymentId and status" },
-        { status: 400 }
+        { status: 400, headers: corsHeaders }
       );
     }
 
@@ -183,7 +199,7 @@ export async function PATCH(request: NextRequest) {
     if (!validStatuses.includes(status)) {
       return NextResponse.json(
         { error: "Invalid status. Must be one of: pending, approved, rejected, cancelled" },
-        { status: 400 }
+        { status: 400, headers: corsHeaders }
       );
     }
 
@@ -232,7 +248,7 @@ export async function PATCH(request: NextRequest) {
       console.error("Payment update error:", updateError);
       return NextResponse.json(
         { error: "Failed to update payment" },
-        { status: 500 }
+        { status: 500, headers: corsHeaders }
       );
     }
 
@@ -327,13 +343,13 @@ export async function PATCH(request: NextRequest) {
         updatedAt: payment.updated_at,
       },
       message: `Payment ${status} successfully`
-    });
+    }, { headers: corsHeaders });
 
   } catch (error) {
     console.error("Payment update error:", error);
     return NextResponse.json(
       { error: "Internal server error" },
-      { status: 500 }
+      { status: 500, headers: corsHeaders }
     );
   }
 }
