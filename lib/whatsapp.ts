@@ -29,7 +29,7 @@ export async function sendMembershipReminderWhatsApp(data: MembershipReminderDat
 
     const response = await twilioClient.messages.create({
       contentSid: "HX1d5e0be08a2a50b209010b1efa1685a6", // Your Twilio template SID
-      from: "whatsapp:+14155238886", // Twilio Sandbox WhatsApp number (replace with your number in production)
+      from: "whatsapp:+19378803700", // Twilio Sandbox WhatsApp number (replace with your number in production)
       to: `whatsapp:${formattedPhone}`,
       contentVariables: JSON.stringify({
         "1": userName,
