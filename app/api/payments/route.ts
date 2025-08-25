@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
 import { validateApiKey, createUnauthorizedResponse } from "@/lib/api-auth";
+import { sendMembershipReminderWhatsApp } from "@/lib/whatsapp";
 
 export async function GET(request: NextRequest) {
   // Validate API key
@@ -243,6 +244,7 @@ export async function PATCH(request: NextRequest) {
       const gracePeriodEnd = new Date(endDate);
       gracePeriodEnd.setDate(gracePeriodEnd.getDate() + 3); // Add 3 grace days
 
+      // Update membership status
       await supabaseAdmin
         .from("memberships")
         .update({
@@ -253,6 +255,47 @@ export async function PATCH(request: NextRequest) {
           updated_at: new Date().toISOString(),
         })
         .eq("id", payment.membership_id);
+
+      // Fetch membership with user and gym data for notifications
+      const { data: membershipData, error: membershipError } = await supabaseAdmin
+        .from("memberships")
+        .select(`
+          id,
+          user_id,
+          gym_id,
+          users!inner (
+            id,
+            email,
+            first_name,
+            last_name,
+            phone
+          ),
+          gyms!inner (
+            id,
+            name
+          )
+        `)
+        .eq("id", payment.membership_id)
+        .single();
+
+      if (!membershipError && membershipData) {
+        const user = membershipData.users;
+        const gym = membershipData.gyms;
+        
+        // Send WhatsApp membership activation notification
+        if (user.phone) {
+          try {
+            await sendMembershipReminderWhatsApp({
+              userPhone: user.phone,
+              userName: `${user.first_name} ${user.last_name}`,
+              gymName: gym.name,
+            });
+          } catch (whatsappError) {
+            console.error("Failed to send WhatsApp notification:", whatsappError);
+            // Don't fail the entire request if WhatsApp fails
+          }
+        }
+      }
     }
 
     return NextResponse.json({
