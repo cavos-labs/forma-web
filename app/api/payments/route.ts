@@ -283,17 +283,26 @@ export async function PATCH(request: NextRequest) {
         const gym = Array.isArray(membershipData.gyms) ? membershipData.gyms[0] : membershipData.gyms;
         
         // Send WhatsApp membership activation notification
+        console.log("🎯 Payment approved, attempting to send WhatsApp notification");
+        console.log("📞 User phone:", user?.phone);
+        console.log("👤 User name:", `${user.first_name} ${user.last_name}`);
+        console.log("🏋️ Gym name:", gym.name);
+        
         if (user?.phone) {
           try {
-            await sendMembershipReminderWhatsApp({
+            console.log("📱 Sending WhatsApp notification for membership activation");
+            const result = await sendMembershipReminderWhatsApp({
               userPhone: user.phone,
               userName: `${user.first_name} ${user.last_name}`,
               gymName: gym.name,
             });
+            console.log("📤 WhatsApp send result:", result);
           } catch (whatsappError) {
-            console.error("Failed to send WhatsApp notification:", whatsappError);
+            console.error("❌ Failed to send WhatsApp notification:", whatsappError);
             // Don't fail the entire request if WhatsApp fails
           }
+        } else {
+          console.log("❌ No phone number found for user, skipping WhatsApp notification");
         }
       }
     }

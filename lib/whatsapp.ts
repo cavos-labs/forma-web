@@ -16,8 +16,15 @@ export interface MembershipReminderData {
 }
 
 export async function sendMembershipReminderWhatsApp(data: MembershipReminderData) {
+  console.log("🔍 Attempting to send WhatsApp message with data:", data);
+  console.log("🔑 Twilio config:", { 
+    hasAccountSid: !!accountSid, 
+    hasAuthToken: !!authToken,
+    hasClient: !!twilioClient 
+  });
+
   if (!twilioClient) {
-    console.error("Twilio client not configured. Please check TWILIO_ACCOUNT_SID and TWILIO_AUTH_TOKEN environment variables.");
+    console.error("❌ Twilio client not configured. Please check TWILIO_ACCOUNT_SID and TWILIO_AUTH_TOKEN environment variables.");
     return { success: false, error: "Twilio not configured" };
   }
 
@@ -26,8 +33,12 @@ export async function sendMembershipReminderWhatsApp(data: MembershipReminderDat
     
     // Ensure phone number is in E.164 format (starts with +)
     const formattedPhone = userPhone.startsWith('+') ? userPhone : `+506${userPhone}`;
+    
+    console.log("📱 Formatted phone number:", formattedPhone);
+    console.log("👤 User name:", userName);
+    console.log("🏋️ Gym name:", gymName);
 
-    const response = await twilioClient.messages.create({
+    const messageData = {
       contentSid: "HX1d5e0be08a2a50b209010b1efa1685a6", // Your Twilio template SID
       from: "whatsapp:+19378803700", // Twilio Sandbox WhatsApp number (replace with your number in production)
       to: `whatsapp:${formattedPhone}`,
@@ -35,12 +46,17 @@ export async function sendMembershipReminderWhatsApp(data: MembershipReminderDat
         "1": userName,
         "2": gymName
       })
-    });
+    };
 
-    console.log("WhatsApp message sent successfully:", response.sid);
+    console.log("📤 Sending message with data:", messageData);
+
+    const response = await twilioClient.messages.create(messageData);
+
+    console.log("✅ WhatsApp message sent successfully:", response.sid);
     return { success: true, data: response };
   } catch (error) {
-    console.error("Error sending WhatsApp message:", error);
+    console.error("❌ Error sending WhatsApp message:", error);
+    console.error("❌ Error details:", JSON.stringify(error, null, 2));
     return { success: false, error };
   }
 }
