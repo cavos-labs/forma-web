@@ -279,11 +279,11 @@ export async function PATCH(request: NextRequest) {
         .single();
 
       if (!membershipError && membershipData) {
-        const user = membershipData.users;
-        const gym = membershipData.gyms;
+        const user = Array.isArray(membershipData.users) ? membershipData.users[0] : membershipData.users;
+        const gym = Array.isArray(membershipData.gyms) ? membershipData.gyms[0] : membershipData.gyms;
         
         // Send WhatsApp membership activation notification
-        if (user.phone) {
+        if (user?.phone) {
           try {
             await sendMembershipReminderWhatsApp({
               userPhone: user.phone,
