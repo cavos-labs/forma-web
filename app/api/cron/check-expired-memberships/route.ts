@@ -160,30 +160,77 @@ export async function POST(request: NextRequest) {
                   whatsappResult.error
                 );
               }
+
+              // Add WhatsApp result to results array
+              results.push({
+                id: membership.id,
+                user: `${(membership.users as any)?.first_name || ""} ${
+                  (membership.users as any)?.last_name || ""
+                }`,
+                email: (membership.users as any)?.email || "sin email",
+                gym: (membership.gyms as any)?.name || "sin nombre",
+                end_date: membership.end_date,
+                status: "expired",
+                message: "Membership marked as expired",
+                whatsapp: {
+                  sent: whatsappResult.success,
+                  phone: userPhone,
+                  error: whatsappResult.error || null,
+                },
+              });
             } catch (whatsappError) {
               console.error(
                 `❌ Error sending WhatsApp reminder for membership ${membership.id}:`,
                 whatsappError
               );
+
+              // Add WhatsApp error result to results array
+              results.push({
+                id: membership.id,
+                user: `${(membership.users as any)?.first_name || ""} ${
+                  (membership.users as any)?.last_name || ""
+                }`,
+                email: (membership.users as any)?.email || "sin email",
+                gym: (membership.gyms as any)?.name || "sin nombre",
+                end_date: membership.end_date,
+                status: "expired",
+                message: "Membership marked as expired",
+                whatsapp: {
+                  sent: false,
+                  phone: userPhone,
+                  error:
+                    whatsappError instanceof Error
+                      ? whatsappError.message
+                      : "Unknown error",
+                },
+              });
             }
           } else {
             console.log(
               `⚠️ No phone number available for user ${membership.user_id}, skipping WhatsApp reminder`
             );
+
+            // Add result for membership without phone number
+            results.push({
+              id: membership.id,
+              user: `${(membership.users as any)?.first_name || ""} ${
+                (membership.users as any)?.last_name || ""
+              }`,
+              email: (membership.users as any)?.email || "sin email",
+              gym: (membership.gyms as any)?.name || "sin nombre",
+              end_date: membership.end_date,
+              status: "expired",
+              message: "Membership marked as expired",
+              whatsapp: {
+                sent: false,
+                phone: null,
+                error: "No phone number available",
+              },
+            });
           }
 
           expiredCount++;
-          results.push({
-            id: membership.id,
-            user: `${(membership.users as any)?.first_name || ""} ${
-              (membership.users as any)?.last_name || ""
-            }`,
-            email: (membership.users as any)?.email || "sin email",
-            gym: (membership.gyms as any)?.name || "sin nombre",
-            end_date: membership.end_date,
-            status: "expired",
-            message: "Membership marked as expired",
-          });
+          // Remove the duplicate results.push that was here before
 
           console.log(
             `Membership ${membership.id} marked as expired for ${
