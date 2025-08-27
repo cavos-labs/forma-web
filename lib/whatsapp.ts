@@ -17,25 +17,31 @@ export interface MembershipReminderData {
   paymentId: string;
 }
 
-export async function sendMembershipReminderWhatsApp(data: MembershipReminderData) {
+export async function sendMembershipReminderWhatsApp(
+  data: MembershipReminderData
+) {
   console.log("🔍 Attempting to send WhatsApp message with data:", data);
-  console.log("🔑 Twilio config:", { 
-    hasAccountSid: !!accountSid, 
+  console.log("🔑 Twilio config:", {
+    hasAccountSid: !!accountSid,
     hasAuthToken: !!authToken,
-    hasClient: !!twilioClient 
+    hasClient: !!twilioClient,
   });
 
   if (!twilioClient) {
-    console.error("❌ Twilio client not configured. Please check TWILIO_ACCOUNT_SID and TWILIO_AUTH_TOKEN environment variables.");
+    console.error(
+      "❌ Twilio client not configured. Please check TWILIO_ACCOUNT_SID and TWILIO_AUTH_TOKEN environment variables."
+    );
     return { success: false, error: "Twilio not configured" };
   }
 
   try {
     const { userPhone, userName, gymName, membershipId, paymentId } = data;
-    
+
     // Ensure phone number is in E.164 format (starts with +)
-    const formattedPhone = userPhone.startsWith('+') ? userPhone : `+506${userPhone}`;
-    
+    const formattedPhone = userPhone.startsWith("+")
+      ? userPhone
+      : `+506${userPhone}`;
+
     console.log("📱 Formatted phone number:", formattedPhone);
     console.log("👤 User name:", userName);
     console.log("🏋️ Gym name:", gymName);
@@ -46,8 +52,8 @@ export async function sendMembershipReminderWhatsApp(data: MembershipReminderDat
       to: `whatsapp:${formattedPhone}`,
       contentVariables: JSON.stringify({
         "1": gymName,
-        "2": `?membershipId=${membershipId}&paymentId=${paymentId}`
-      })
+        "2": `?membershipId=${membershipId}&paymentId=${paymentId}`,
+      }),
     };
 
     console.log("📤 Sending message with data:", messageData);
