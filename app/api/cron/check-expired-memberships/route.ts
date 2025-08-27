@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
+import { sendMembershipReminderWhatsApp } from "@/lib/whatsapp";
 
 // Check if a date has expired with optional tolerance days
 function isExpired(dateString: string, toleranceDays: number = 0): boolean {
@@ -46,7 +47,8 @@ export async function POST(request: NextRequest) {
         users (
           email,
           first_name,
-          last_name
+          last_name,
+          phone
         ),
         gyms (
           name
@@ -133,6 +135,43 @@ export async function POST(request: NextRequest) {
             );
           }
 
+          // Send WhatsApp reminder message
+          const userPhone = (membership.users as any)?.phone;
+          if (userPhone) {
+            try {
+              const whatsappResult = await sendMembershipReminderWhatsApp({
+                userPhone: userPhone,
+                userName: `${(membership.users as any)?.first_name || ""} ${
+                  (membership.users as any)?.last_name || ""
+                }`.trim(),
+                gymName: (membership.gyms as any)?.name || "el gimnasio",
+                membershipId: membership.id,
+                paymentId: "", // No payment ID for expired memberships
+              });
+
+              console.log("whatsappResult", whatsappResult);
+              if (whatsappResult.success) {
+                console.log(
+                  `✅ WhatsApp reminder sent successfully for membership ${membership.id} to ${userPhone}`
+                );
+              } else {
+                console.error(
+                  `❌ Failed to send WhatsApp reminder for membership ${membership.id}:`,
+                  whatsappResult.error
+                );
+              }
+            } catch (whatsappError) {
+              console.error(
+                `❌ Error sending WhatsApp reminder for membership ${membership.id}:`,
+                whatsappError
+              );
+            }
+          } else {
+            console.log(
+              `⚠️ No phone number available for user ${membership.user_id}, skipping WhatsApp reminder`
+            );
+          }
+
           expiredCount++;
           results.push({
             id: membership.id,
@@ -177,7 +216,8 @@ export async function POST(request: NextRequest) {
         users (
           email,
           first_name,
-          last_name
+          last_name,
+          phone
         ),
         gyms (
           name
