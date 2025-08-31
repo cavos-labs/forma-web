@@ -48,7 +48,7 @@ export async function sendMembershipReminderWhatsApp(
 
     const messageData = {
       contentSid: "HXa8721e8e848c4c0da3a721625b4c628c", // Your Twilio template SID
-      from: "whatsapp:+17409486674", // Twilio Sandbox WhatsApp number (replace with your number in production)
+      from: "whatsapp:+19519441781", // Twilio Sandbox WhatsApp number (replace with your number in production)
       to: `whatsapp:${formattedPhone}`,
       contentVariables: JSON.stringify({
         "1": gymName,
