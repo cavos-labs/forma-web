@@ -21,6 +21,7 @@ export async function POST(request: NextRequest) {
       profileImageUrl,
       gymId, // Add gymId to create the membership
       monthlyFee, // Optional: custom monthly fee, defaults to gym's monthly_fee
+      startDate, // Optional: custom start date for membership, defaults to current date
     } = await request.json();
 
     // Validate required fields
@@ -106,12 +107,13 @@ export async function POST(request: NextRequest) {
     }
 
     // Create membership record
-    const currentDate = new Date();
-    const endDate = new Date(currentDate);
+    const membershipStartDate = startDate ? new Date(startDate) : new Date();
+    const endDate = new Date(membershipStartDate);
     endDate.setDate(endDate.getDate() + 30);
 
     // Use provided monthlyFee or fall back to gym's default
-    const finalMonthlyFee = monthlyFee && monthlyFee > 0 ? monthlyFee : gym.monthly_fee || 26500.0;
+    const finalMonthlyFee =
+      monthlyFee && monthlyFee > 0 ? monthlyFee : gym.monthly_fee || 26500.0;
 
     const { data: membership, error: membershipError } = await supabaseAdmin
       .from("memberships")
@@ -119,7 +121,7 @@ export async function POST(request: NextRequest) {
         user_id: user.id,
         gym_id: gymId,
         status: "pending_payment",
-        start_date: currentDate,
+        start_date: membershipStartDate,
         end_date: endDate,
         monthly_fee: finalMonthlyFee,
       })
@@ -143,9 +145,9 @@ export async function POST(request: NextRequest) {
       .insert({
         membership_id: membership.id,
         amount: finalMonthlyFee,
-        payment_method: 'sinpe',
+        payment_method: "sinpe",
         payment_proof_url: `pending-upload-${membership.id}`, // Temporary placeholder
-        status: 'pending',
+        status: "pending",
       })
       .select()
       .single();
@@ -162,21 +164,21 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Send payment proof email with upload link
-    try {
-      const responseEmail = await sendPaymentProofEmail({
-        userEmail: email,
-        userName: `${firstName} ${lastName}`,
-        gymName: gym.name,
-        monthlyFee: finalMonthlyFee,
-        membershipId: membership.id,
-        paymentId: payment.id,
-      });
-    } catch (emailError) {
-      console.error("Failed to send payment proof email:", emailError);
-      // Don't fail the entire request if email fails
-      // The user is still created successfully
-    }
+    // // Send payment proof email with upload link
+    // try {
+    //   const responseEmail = await sendPaymentProofEmail({
+    //     userEmail: email,
+    //     userName: `${firstName} ${lastName}`,
+    //     gymName: gym.name,
+    //     monthlyFee: finalMonthlyFee,
+    //     membershipId: membership.id,
+    //     paymentId: payment.id,
+    //   });
+    // } catch (emailError) {
+    //   console.error("Failed to send payment proof email:", emailError);
+    //   // Don't fail the entire request if email fails
+    //   // The user is still created successfully
+    // }
 
     // Send WhatsApp message for membership reminder
     if (phone) {
