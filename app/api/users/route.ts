@@ -164,21 +164,21 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Send payment proof email with upload link
-    try {
-      const responseEmail = await sendPaymentProofEmail({
-        userEmail: email,
-        userName: `${firstName} ${lastName}`,
-        gymName: gym.name,
-        monthlyFee: finalMonthlyFee,
-        membershipId: membership.id,
-        paymentId: payment.id,
-      });
-    } catch (emailError) {
-      console.error("Failed to send payment proof email:", emailError);
-      // Don't fail the entire request if email fails
-      // The user is still created successfully
-    }
+    // // Send payment proof email with upload link
+    // try {
+    //   const responseEmail = await sendPaymentProofEmail({
+    //     userEmail: email,
+    //     userName: `${firstName} ${lastName}`,
+    //     gymName: gym.name,
+    //     monthlyFee: finalMonthlyFee,
+    //     membershipId: membership.id,
+    //     paymentId: payment.id,
+    //   });
+    // } catch (emailError) {
+    //   console.error("Failed to send payment proof email:", emailError);
+    //   // Don't fail the entire request if email fails
+    //   // The user is still created successfully
+    // }
 
     // Send WhatsApp message for membership reminder
     if (phone) {
