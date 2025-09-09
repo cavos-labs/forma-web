@@ -20,6 +20,7 @@ export async function POST(request: NextRequest) {
       phone,
       dateOfBirth,
       profileImageUrl,
+      gender,
       gymId, // Add gymId to create the membership
       monthlyFee, // Optional: custom monthly fee, defaults to gym's monthly_fee
       startDate, // Optional: custom start date for membership, defaults to current date
@@ -41,8 +42,7 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
-
-    // Validate and format phone number if provided
+    
     let formattedPhone = null;
     if (phone) {
       const phoneValidation = validateAndFormatPhone(phone);
@@ -53,6 +53,18 @@ export async function POST(request: NextRequest) {
         );
       }
       formattedPhone = phoneValidation.formattedPhone;
+    }
+
+    // Validate gender if provided
+    const validGenders = ["male", "female", "other", "unspecified"];
+    if (gender && !validGenders.includes(gender)) {
+      return NextResponse.json(
+        {
+          error:
+            "Invalid gender value. Must be one of: male, female, other, unspecified",
+        },
+        { status: 400 }
+      );
     }
 
     // Check if user already exists
@@ -108,6 +120,7 @@ export async function POST(request: NextRequest) {
         phone: formattedPhone, // Use the validated and formatted phone number
         date_of_birth: dateOfBirth ? new Date(dateOfBirth) : null,
         profile_image_url: profileImageUrl || null,
+        gender: gender || "unspecified",
       })
       .select()
       .single();
@@ -188,6 +201,7 @@ export async function POST(request: NextRequest) {
     //     membershipId: membership.id,
     //     paymentId: payment.id,
     //   });
+
     // } catch (emailError) {
     //   console.error("Failed to send payment proof email:", emailError);
     //   // Don't fail the entire request if email fails
@@ -225,6 +239,7 @@ export async function POST(request: NextRequest) {
         phone: user.phone, // This will be the formatted phone number
         dateOfBirth: user.date_of_birth,
         profileImageUrl: user.profile_image_url,
+        gender: user.gender,
         createdAt: user.created_at,
       },
       membership: {
@@ -271,6 +286,7 @@ export async function GET(request: NextRequest) {
         phone,
         date_of_birth,
         profile_image_url,
+        gender,
         created_at,
         updated_at
       `
@@ -300,6 +316,7 @@ export async function GET(request: NextRequest) {
             phone,
             date_of_birth,
             profile_image_url,
+            gender,
             created_at,
             updated_at
           `
@@ -338,6 +355,7 @@ export async function GET(request: NextRequest) {
         phone: user.phone,
         dateOfBirth: user.date_of_birth,
         profileImageUrl: user.profile_image_url,
+        gender: user.gender,
         createdAt: user.created_at,
         updatedAt: user.updated_at,
       })),

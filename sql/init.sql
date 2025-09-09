@@ -43,6 +43,7 @@ DROP TYPE IF EXISTS notification_type CASCADE;
 DROP TYPE IF EXISTS payment_method CASCADE;
 DROP TYPE IF EXISTS payment_status CASCADE;
 DROP TYPE IF EXISTS membership_status CASCADE;
+DROP TYPE IF EXISTS gender_enum CASCADE;
 
 -- Habilitar extensiones necesarias
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
@@ -85,6 +86,13 @@ CREATE TYPE notification_status AS ENUM (
     'failed'
 );
 
+CREATE TYPE gender_enum AS ENUM (
+    'male',
+    'female',
+    'other',
+    'unspecified'
+);
+
 -- ====================================
 -- CREAR TABLAS
 -- ====================================
@@ -99,6 +107,7 @@ CREATE TABLE users (
     phone VARCHAR(20),
     date_of_birth DATE,
     profile_image_url TEXT,
+    gender gender_enum NOT NULL DEFAULT 'unspecified',
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
