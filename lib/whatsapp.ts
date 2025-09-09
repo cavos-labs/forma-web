@@ -1,4 +1,5 @@
 import twilio from "twilio";
+import { validateAndFormatPhone } from "./phone";
 
 const accountSid = process.env.TWILIO_ACCOUNT_SID;
 const authToken = process.env.TWILIO_AUTH_TOKEN;
@@ -37,11 +38,19 @@ export async function sendMembershipReminderWhatsApp(
   try {
     const { userPhone, userName, gymName, membershipId, paymentId } = data;
 
-    // Ensure phone number is in E.164 format (starts with +)
-    const formattedPhone = userPhone.startsWith("+")
-      ? userPhone
-      : `+506${userPhone}`;
+    // Validate and format phone number
+    const phoneValidation = validateAndFormatPhone(userPhone);
+    
+    if (!phoneValidation.isValid) {
+      console.error("❌ Invalid phone number:", phoneValidation.error);
+      return { 
+        success: false, 
+        error: `Invalid phone number: ${phoneValidation.error}` 
+      };
+    }
 
+    const formattedPhone = phoneValidation.formattedPhone!;
+    console.log("📱 Original phone:", userPhone);
     console.log("📱 Formatted phone number:", formattedPhone);
     console.log("👤 User name:", userName);
     console.log("🏋️ Gym name:", gymName);

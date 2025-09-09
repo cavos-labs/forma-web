@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
 import { validateApiKey, createUnauthorizedResponse } from "@/lib/api-auth";
+import { validateAndFormatPhone } from "@/lib/phone";
 
 export async function GET(
   request: NextRequest,
@@ -127,12 +128,29 @@ export async function PUT(
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
+    // Validate and format phone number if provided
+    let formattedPhone = phone;
+    if (phone !== undefined && phone !== null) {
+      if (phone === "") {
+        formattedPhone = null; // Allow empty string to clear phone
+      } else {
+        const phoneValidation = validateAndFormatPhone(phone);
+        if (!phoneValidation.isValid) {
+          return NextResponse.json(
+            { error: `Invalid phone number: ${phoneValidation.error}` },
+            { status: 400 }
+          );
+        }
+        formattedPhone = phoneValidation.formattedPhone;
+      }
+    }
+
     // Prepare update data
     const updateData: any = {};
     if (uid !== undefined) updateData.uid = uid;
     if (firstName !== undefined) updateData.first_name = firstName;
     if (lastName !== undefined) updateData.last_name = lastName;
-    if (phone !== undefined) updateData.phone = phone;
+    if (phone !== undefined) updateData.phone = formattedPhone; // Use validated phone
     if (dateOfBirth !== undefined) {
       updateData.date_of_birth = dateOfBirth ? new Date(dateOfBirth) : null;
     }
@@ -164,7 +182,7 @@ export async function PUT(
         email: updatedUser.email,
         firstName: updatedUser.first_name,
         lastName: updatedUser.last_name,
-        phone: updatedUser.phone,
+        phone: updatedUser.phone, // This will be the formatted phone number
         dateOfBirth: updatedUser.date_of_birth,
         profileImageUrl: updatedUser.profile_image_url,
         gender: updatedUser.gender,
