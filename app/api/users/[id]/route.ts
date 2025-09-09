@@ -36,6 +36,7 @@ export async function GET(
         phone,
         date_of_birth,
         profile_image_url,
+        gender,
         created_at,
         updated_at
       `
@@ -58,6 +59,7 @@ export async function GET(
         phone: user.phone,
         dateOfBirth: user.date_of_birth,
         profileImageUrl: user.profile_image_url,
+        gender: user.gender,
         createdAt: user.created_at,
         updatedAt: user.updated_at,
       },
@@ -82,8 +84,15 @@ export async function PUT(
 
   try {
     const { id: userId } = await params;
-    const { uid, firstName, lastName, phone, dateOfBirth, profileImageUrl } =
-      await request.json();
+    const {
+      uid,
+      firstName,
+      lastName,
+      phone,
+      dateOfBirth,
+      profileImageUrl,
+      gender,
+    } = await request.json();
 
     // Validate UUID format
     const uuidRegex =
@@ -91,6 +100,18 @@ export async function PUT(
     if (!uuidRegex.test(userId)) {
       return NextResponse.json(
         { error: "Invalid user ID format" },
+        { status: 400 }
+      );
+    }
+
+    // Validate gender if provided
+    const validGenders = ["male", "female", "other", "unspecified"];
+    if (gender && !validGenders.includes(gender)) {
+      return NextResponse.json(
+        {
+          error:
+            "Invalid gender value. Must be one of: male, female, other, unspecified",
+        },
         { status: 400 }
       );
     }
@@ -117,6 +138,7 @@ export async function PUT(
     }
     if (profileImageUrl !== undefined)
       updateData.profile_image_url = profileImageUrl;
+    if (gender !== undefined) updateData.gender = gender;
 
     // Update user
     const { data: updatedUser, error: updateError } = await supabaseAdmin
@@ -145,10 +167,10 @@ export async function PUT(
         phone: updatedUser.phone,
         dateOfBirth: updatedUser.date_of_birth,
         profileImageUrl: updatedUser.profile_image_url,
+        gender: updatedUser.gender,
         createdAt: updatedUser.created_at,
         updatedAt: updatedUser.updated_at,
       },
-      message: "User updated successfully",
     });
   } catch (error) {
     console.error("User update error:", error);

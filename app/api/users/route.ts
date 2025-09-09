@@ -19,6 +19,7 @@ export async function POST(request: NextRequest) {
       phone,
       dateOfBirth,
       profileImageUrl,
+      gender,
       gymId, // Add gymId to create the membership
       monthlyFee, // Optional: custom monthly fee, defaults to gym's monthly_fee
       startDate, // Optional: custom start date for membership, defaults to current date
@@ -37,6 +38,18 @@ export async function POST(request: NextRequest) {
     if (!emailRegex.test(email)) {
       return NextResponse.json(
         { error: "Invalid email format" },
+        { status: 400 }
+      );
+    }
+
+    // Validate gender if provided
+    const validGenders = ["male", "female", "other", "unspecified"];
+    if (gender && !validGenders.includes(gender)) {
+      return NextResponse.json(
+        {
+          error:
+            "Invalid gender value. Must be one of: male, female, other, unspecified",
+        },
         { status: 400 }
       );
     }
@@ -94,6 +107,7 @@ export async function POST(request: NextRequest) {
         phone: phone || null,
         date_of_birth: dateOfBirth ? new Date(dateOfBirth) : null,
         profile_image_url: profileImageUrl || null,
+        gender: gender || "unspecified",
       })
       .select()
       .single();
@@ -174,6 +188,7 @@ export async function POST(request: NextRequest) {
     //     membershipId: membership.id,
     //     paymentId: payment.id,
     //   });
+
     // } catch (emailError) {
     //   console.error("Failed to send payment proof email:", emailError);
     //   // Don't fail the entire request if email fails
@@ -211,6 +226,7 @@ export async function POST(request: NextRequest) {
         phone: user.phone,
         dateOfBirth: user.date_of_birth,
         profileImageUrl: user.profile_image_url,
+        gender: user.gender,
         createdAt: user.created_at,
       },
       membership: {
@@ -257,6 +273,7 @@ export async function GET(request: NextRequest) {
         phone,
         date_of_birth,
         profile_image_url,
+        gender,
         created_at,
         updated_at
       `
@@ -286,6 +303,7 @@ export async function GET(request: NextRequest) {
             phone,
             date_of_birth,
             profile_image_url,
+            gender,
             created_at,
             updated_at
           `
@@ -324,6 +342,7 @@ export async function GET(request: NextRequest) {
         phone: user.phone,
         dateOfBirth: user.date_of_birth,
         profileImageUrl: user.profile_image_url,
+        gender: user.gender,
         createdAt: user.created_at,
         updatedAt: user.updated_at,
       })),
