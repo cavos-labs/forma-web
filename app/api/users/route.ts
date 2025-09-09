@@ -3,6 +3,7 @@ import { supabaseAdmin } from "@/lib/supabase";
 import { validateApiKey, createUnauthorizedResponse } from "@/lib/api-auth";
 import { sendPaymentProofEmail } from "@/lib/email";
 import { sendMembershipReminderWhatsApp } from "@/lib/whatsapp";
+import { validateAndFormatPhone } from "@/lib/phone";
 
 export async function POST(request: NextRequest) {
   // Validate API key
@@ -39,6 +40,19 @@ export async function POST(request: NextRequest) {
         { error: "Invalid email format" },
         { status: 400 }
       );
+    }
+
+    // Validate and format phone number if provided
+    let formattedPhone = null;
+    if (phone) {
+      const phoneValidation = validateAndFormatPhone(phone);
+      if (!phoneValidation.isValid) {
+        return NextResponse.json(
+          { error: `Invalid phone number: ${phoneValidation.error}` },
+          { status: 400 }
+        );
+      }
+      formattedPhone = phoneValidation.formattedPhone;
     }
 
     // Check if user already exists
@@ -91,7 +105,7 @@ export async function POST(request: NextRequest) {
         email,
         first_name: firstName,
         last_name: lastName,
-        phone: phone || null,
+        phone: formattedPhone, // Use the validated and formatted phone number
         date_of_birth: dateOfBirth ? new Date(dateOfBirth) : null,
         profile_image_url: profileImageUrl || null,
       })
@@ -181,11 +195,11 @@ export async function POST(request: NextRequest) {
     // }
 
     // Send WhatsApp message for membership reminder
-    if (phone) {
+    if (formattedPhone) {
       try {
         console.log("📱 Sending WhatsApp reminder for new user registration");
         const whatsappResult = await sendMembershipReminderWhatsApp({
-          userPhone: phone,
+          userPhone: formattedPhone, // Use the validated and formatted phone number
           userName: `${firstName} ${lastName}`,
           gymName: gym.name,
           membershipId: membership.id,
@@ -208,7 +222,7 @@ export async function POST(request: NextRequest) {
         email: user.email,
         firstName: user.first_name,
         lastName: user.last_name,
-        phone: user.phone,
+        phone: user.phone, // This will be the formatted phone number
         dateOfBirth: user.date_of_birth,
         profileImageUrl: user.profile_image_url,
         createdAt: user.created_at,
