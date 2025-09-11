@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
     const { data, error } = await supabaseAdmin.auth.resetPasswordForEmail(
       email,
       {
-        redirectTo: "http://localhost:3000/reset-password",
+        redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/reset-password`,
       }
     );
 
