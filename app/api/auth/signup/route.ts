@@ -90,6 +90,7 @@ export async function POST(request: NextRequest) {
       });
 
     if (adminError) {
+      console.error("Admin creation error:", adminError);
       // Clean up gym and auth user if admin creation fails
       await supabaseAdmin.from("gyms").delete().eq("id", gym.id);
       await supabaseAdmin.auth.admin.deleteUser(authUser.user.id);
