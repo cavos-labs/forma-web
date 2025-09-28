@@ -238,8 +238,24 @@ export async function PATCH(request: NextRequest) {
 
     // If payment is approved, update the membership status to active
     if (status === 'approved') {
-      const currentDate = new Date();
-      const endDate = new Date(currentDate);
+      // Get the membership to preserve the original start_date
+      const { data: membership, error: membershipError } = await supabaseAdmin
+        .from("memberships")
+        .select("start_date")
+        .eq("id", payment.membership_id)
+        .single();
+
+      if (membershipError) {
+        console.error("Error fetching membership:", membershipError);
+        return NextResponse.json(
+          { error: "Failed to fetch membership data" },
+          { status: 500 }
+        );
+      }
+
+      // Use the original start_date from the membership, or current date if not set
+      const membershipStartDate = membership.start_date ? new Date(membership.start_date) : new Date();
+      const endDate = new Date(membershipStartDate);
       endDate.setDate(endDate.getDate() + 30); // Add 30 days
       const gracePeriodEnd = new Date(endDate);
       gracePeriodEnd.setDate(gracePeriodEnd.getDate() + 3); // Add 3 grace days
@@ -249,7 +265,7 @@ export async function PATCH(request: NextRequest) {
         .from("memberships")
         .update({
           status: 'active',
-          start_date: currentDate.toISOString(),
+          start_date: membershipStartDate.toISOString(),
           end_date: endDate.toISOString(),
           grace_period_end: gracePeriodEnd.toISOString(),
           updated_at: new Date().toISOString(),

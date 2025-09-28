@@ -293,20 +293,26 @@ CREATE TRIGGER set_grace_period
 -- Función para actualizar estado de membresía cuando se aprueba un pago
 CREATE OR REPLACE FUNCTION update_membership_on_payment_approval()
 RETURNS TRIGGER AS $$
+DECLARE
+    membership_start_date DATE;
 BEGIN
     -- Solo si el pago pasa de pending a approved
     IF OLD.status = 'pending' AND NEW.status = 'approved' THEN
+        -- Obtener la fecha de inicio de la membresía
+        SELECT start_date INTO membership_start_date 
+        FROM memberships 
+        WHERE id = NEW.membership_id;
+        
+        -- Si no hay fecha de inicio, usar la fecha actual
+        IF membership_start_date IS NULL THEN
+            membership_start_date := CURRENT_DATE;
+        END IF;
+        
         UPDATE memberships 
         SET 
             status = 'active',
-            start_date = CASE 
-                WHEN start_date IS NULL THEN CURRENT_DATE 
-                ELSE start_date 
-            END,
-            end_date = CASE 
-                WHEN end_date IS NULL THEN CURRENT_DATE + INTERVAL '1 month'
-                ELSE end_date + INTERVAL '1 month'
-            END
+            start_date = membership_start_date,
+            end_date = membership_start_date + INTERVAL '1 month'
         WHERE id = NEW.membership_id;
         
         -- Registrar fecha de aprobación
