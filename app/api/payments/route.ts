@@ -238,10 +238,10 @@ export async function PATCH(request: NextRequest) {
 
     // If payment is approved, update the membership status to active
     if (status === 'approved') {
-      // Get the membership to preserve the original start_date
+      // Get the membership to check its current status and dates
       const { data: membership, error: membershipError } = await supabaseAdmin
         .from("memberships")
-        .select("start_date")
+        .select("start_date, end_date, status")
         .eq("id", payment.membership_id)
         .single();
 
@@ -253,15 +253,44 @@ export async function PATCH(request: NextRequest) {
         );
       }
 
-      // Use the original start_date from the membership, or current date if not set
-      const membershipStartDate = membership.start_date ? new Date(membership.start_date) : new Date();
+      // Determine the new start_date based on membership status
+      let membershipStartDate: Date;
+      
+      if (membership.status === 'expired' || membership.status === 'inactive') {
+        // If membership is expired or inactive, start from today (date of approval)
+        membershipStartDate = new Date();
+        console.log(`Membership ${payment.membership_id} is ${membership.status}, starting new period from today`);
+      } else if (membership.status === 'active' && membership.end_date) {
+        // If membership is still active, check if we should extend from end_date or start from today
+        const currentEndDate = new Date(membership.end_date);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        currentEndDate.setHours(0, 0, 0, 0);
+        
+        // If end_date is in the future, extend from end_date; otherwise start from today
+        if (currentEndDate >= today) {
+          membershipStartDate = currentEndDate;
+          console.log(`Membership ${payment.membership_id} is active, extending from end_date: ${currentEndDate.toISOString()}`);
+        } else {
+          membershipStartDate = new Date();
+          console.log(`Membership ${payment.membership_id} end_date has passed, starting from today`);
+        }
+      } else {
+        // Fallback: use original start_date if exists, otherwise use today
+        membershipStartDate = membership.start_date ? new Date(membership.start_date) : new Date();
+        console.log(`Membership ${payment.membership_id} using fallback start_date logic`);
+      }
+
+      // Calculate end_date (30 days from start_date)
       const endDate = new Date(membershipStartDate);
       endDate.setDate(endDate.getDate() + 30); // Add 30 days
+      
+      // Calculate grace_period_end (3 days after end_date)
       const gracePeriodEnd = new Date(endDate);
       gracePeriodEnd.setDate(gracePeriodEnd.getDate() + 3); // Add 3 grace days
 
-      // Update membership status
-      await supabaseAdmin
+      // Update membership status and dates
+      const { error: updateMembershipError } = await supabaseAdmin
         .from("memberships")
         .update({
           status: 'active',
@@ -271,6 +300,16 @@ export async function PATCH(request: NextRequest) {
           updated_at: new Date().toISOString(),
         })
         .eq("id", payment.membership_id);
+
+      if (updateMembershipError) {
+        console.error("Error updating membership:", updateMembershipError);
+        return NextResponse.json(
+          { error: "Failed to update membership" },
+          { status: 500 }
+        );
+      }
+
+      console.log(`Membership ${payment.membership_id} updated: start_date=${membershipStartDate.toISOString()}, end_date=${endDate.toISOString()}`);
 
     }
 
