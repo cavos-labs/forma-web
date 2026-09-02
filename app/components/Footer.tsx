@@ -14,7 +14,9 @@ export default function Footer() {
           <img
             src={theme === "dark" ? "/images/forma-icon-white.png" : "/images/forma-icon-black.png"}
             alt=""
-            className="h-8 w-8"
+            width={320}
+            height={345}
+            className="h-8 w-auto"
           />
           <p className="font-serif text-lg leading-snug text-[var(--fg)]">
             {copy.footer.tagline}
