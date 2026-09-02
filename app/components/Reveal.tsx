@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef } from "react";
-import { gsap, useGSAP } from "./gsap-register";
+import { gsap, reveal, useGSAP } from "./gsap-register";
 
 export function Reveal({
   children,
@@ -16,17 +16,7 @@ export function Reveal({
     () => {
       const mm = gsap.matchMedia();
       mm.add("(prefers-reduced-motion: no-preference)", () => {
-        gsap.from(ref.current, {
-          y: 28,
-          duration: 1.05,
-          ease: "power3.out",
-          immediateRender: false,
-          scrollTrigger: {
-            trigger: ref.current,
-            start: "top 88%",
-            once: true,
-          },
-        });
+        reveal(ref.current, ref.current);
       });
     },
     { scope: ref }

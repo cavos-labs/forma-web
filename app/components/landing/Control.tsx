@@ -2,55 +2,17 @@
 
 import { useRef } from "react";
 import Image from "next/image";
-import { gsap, refreshWhenImagesLoad, useGSAP } from "../gsap-register";
+import { parallax, reveal, useSectionMotion } from "../gsap-register";
 import { useSite } from "../SiteProvider";
 
 export default function Control() {
   const { copy } = useSite();
   const root = useRef<HTMLElement>(null);
 
-  useGSAP(
-    () => {
-      const frame = root.current;
-      if (!frame) return;
-      refreshWhenImagesLoad(frame);
-
-      const mm = gsap.matchMedia();
-      mm.add("(prefers-reduced-motion: no-preference)", () => {
-        gsap.fromTo(
-          ".control-photo",
-          { yPercent: -8, scale: 1.2 },
-          {
-            yPercent: 8,
-            scale: 1.2,
-            ease: "none",
-            scrollTrigger: {
-              trigger: frame,
-              start: "top bottom",
-              end: "bottom top",
-              scrub: 1,
-              refreshPriority: 2,
-            },
-          }
-        );
-        gsap.from(".control-copy > *", {
-          y: 36,
-          duration: 1,
-          stagger: 0.08,
-          ease: "power3.out",
-          immediateRender: false,
-          scrollTrigger: {
-            trigger: ".control-copy",
-            start: "top 80%",
-            once: true,
-            refreshPriority: 2,
-          },
-        });
-      });
-      return () => mm.revert();
-    },
-    { scope: root }
-  );
+  useSectionMotion(root, () => {
+    parallax(".control-photo", root.current!);
+    reveal(".control-copy > *", ".control-copy");
+  });
 
   return (
     <section data-nav-solid ref={root} className="bg-[var(--bg)]">

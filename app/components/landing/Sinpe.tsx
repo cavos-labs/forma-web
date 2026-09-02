@@ -2,55 +2,17 @@
 
 import { useRef } from "react";
 import Image from "next/image";
-import { gsap, refreshWhenImagesLoad, useGSAP } from "../gsap-register";
+import { parallax, reveal, useSectionMotion } from "../gsap-register";
 import { useSite } from "../SiteProvider";
 
 export default function Sinpe() {
   const { copy } = useSite();
   const root = useRef<HTMLElement>(null);
 
-  useGSAP(
-    () => {
-      const frame = root.current;
-      if (!frame) return;
-      refreshWhenImagesLoad(frame);
-
-      const mm = gsap.matchMedia();
-      mm.add("(prefers-reduced-motion: no-preference)", () => {
-        gsap.fromTo(
-          ".sinpe-photo",
-          { scale: 1.16, xPercent: 8 },
-          {
-            scale: 1,
-            xPercent: 0,
-            ease: "none",
-            scrollTrigger: {
-              trigger: frame,
-              start: "top 80%",
-              end: "center center",
-              scrub: 1,
-              refreshPriority: 3,
-            },
-          }
-        );
-        gsap.from(".sinpe-copy > *", {
-          y: 36,
-          duration: 1,
-          stagger: 0.1,
-          ease: "power3.out",
-          immediateRender: false,
-          scrollTrigger: {
-            trigger: ".sinpe-copy",
-            start: "top 80%",
-            once: true,
-            refreshPriority: 3,
-          },
-        });
-      });
-      return () => mm.revert();
-    },
-    { scope: root }
-  );
+  useSectionMotion(root, () => {
+    parallax(".sinpe-photo", root.current!);
+    reveal(".sinpe-copy > *", ".sinpe-copy");
+  });
 
   return (
     <section ref={root} className="grid md:grid-cols-2">

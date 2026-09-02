@@ -3,58 +3,21 @@
 import { useRef } from "react";
 import { ArrowRight } from "@phosphor-icons/react";
 import { WHATSAPP_HREF, PHONE_DISPLAY } from "@/lib/site";
-import { gsap, useGSAP } from "../gsap-register";
+import { reveal, useSectionMotion } from "../gsap-register";
 import { useSite } from "../SiteProvider";
 
 export default function Contact() {
   const { copy } = useSite();
   const root = useRef<HTMLElement>(null);
 
-  useGSAP(
-    () => {
-      const frame = root.current;
-      if (!frame) return;
-
-      const mm = gsap.matchMedia();
-      mm.add("(prefers-reduced-motion: no-preference)", () => {
-        gsap.fromTo(
-          ".contact-title",
-          { clipPath: "inset(0 0 100% 0)" },
-          {
-            clipPath: "inset(0 0 0% 0)",
-            ease: "none",
-            scrollTrigger: {
-              trigger: ".contact-title",
-              start: "top 88%",
-              end: "top 52%",
-              scrub: 1,
-              refreshPriority: 4,
-            },
-          }
-        );
-        gsap.from(".contact-rest > *", {
-          y: 24,
-          duration: 0.85,
-          stagger: 0.08,
-          ease: "power3.out",
-          immediateRender: false,
-          scrollTrigger: {
-            trigger: ".contact-rest",
-            start: "top 85%",
-            once: true,
-            refreshPriority: 4,
-          },
-        });
-      });
-      return () => mm.revert();
-    },
-    { scope: root }
-  );
+  useSectionMotion(root, () => {
+    reveal([".contact-title", ...document.querySelectorAll(".contact-rest > *")], root.current!);
+  });
 
   return (
     <section id="contact" ref={root} className="bg-[var(--bg)] px-4 py-28 md:px-8 md:py-40">
       <div className="mx-auto max-w-[52rem] text-center">
-        <h2 className="contact-title overflow-hidden font-display text-[clamp(3.2rem,8vw,6rem)] uppercase leading-[0.9] tracking-tight text-[var(--fg)]">
+        <h2 className="contact-title font-display text-[clamp(3.2rem,8vw,6rem)] uppercase leading-[0.9] tracking-tight text-[var(--fg)]">
           {copy.contact.headline}
         </h2>
         <div className="contact-rest">

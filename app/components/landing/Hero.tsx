@@ -3,49 +3,23 @@
 import { useRef } from "react";
 import Image from "next/image";
 import { ArrowRight } from "@phosphor-icons/react";
-import { gsap, refreshWhenImagesLoad, useGSAP } from "../gsap-register";
+import { gsap, parallax, useSectionMotion } from "../gsap-register";
 import { useSite } from "../SiteProvider";
 
 export default function Hero() {
   const { copy } = useSite();
   const root = useRef<HTMLElement>(null);
 
-  useGSAP(
-    () => {
-      const frame = root.current;
-      if (!frame) return;
-      refreshWhenImagesLoad(frame);
-
-      const mm = gsap.matchMedia();
-      mm.add("(prefers-reduced-motion: no-preference)", () => {
-        gsap.from(".hero-copy > *", {
-          y: 20,
-          duration: 1,
-          stagger: 0.1,
-          ease: "power3.out",
-          immediateRender: false,
-        });
-
-        const tl = gsap.timeline({
-          defaults: { ease: "none" },
-          scrollTrigger: {
-            trigger: frame,
-            start: "top top",
-            end: "+=180%",
-            pin: true,
-            scrub: 1,
-            invalidateOnRefresh: true,
-            refreshPriority: 0,
-          },
-        });
-
-        tl.to(".hero-photo", { scale: 1.18 }, 0)
-          .to(".hero-copy", { yPercent: -12, autoAlpha: 0 }, 0.45);
-      });
-      return () => mm.revert();
-    },
-    { scope: root }
-  );
+  useSectionMotion(root, () => {
+    parallax(".hero-photo", root.current!, 5);
+    gsap.from(".hero-copy > *", {
+      y: 10,
+      autoAlpha: 0,
+      duration: 0.5,
+      stagger: 0.07,
+      ease: "power2.out",
+    });
+  });
 
   return (
     <section data-hero ref={root} className="relative bg-[var(--ink)]">
