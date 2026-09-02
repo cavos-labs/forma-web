@@ -54,7 +54,7 @@ export default function Header({
 
   const fg = dark ? "#F0F0F0" : "#373737";
   const bg = dark ? "#373737" : "#F0F0F0";
-  const iconSrc = dark ? "/images/forma-icon-white.png" : "/images/forma-icon-black.png";
+  const wordmarkSrc = dark ? "/images/forma-logo-white.png" : "/images/forma-logo-black.png";
 
   const links = [
     { label: copy.nav.features, href: "/#features" },
@@ -102,7 +102,7 @@ export default function Header({
           style={{ color: fg }}
         >
           <a href="/" className="flex items-center" aria-label="FORMA">
-            <img src={iconSrc} alt="" className="h-7 w-7" />
+            <img src={wordmarkSrc} alt="" width={1290} height={515} className="h-5 w-auto md:h-6" />
           </a>
 
           <div className="hidden items-center gap-8 lg:flex">
@@ -181,7 +181,7 @@ export default function Header({
             style={{ backgroundColor: bg, color: fg }}
           >
             <div className="flex items-center justify-between border-b px-6 py-6" style={{ borderColor: `${fg}22` }}>
-              <img src={iconSrc} alt="" className="h-7 w-7" />
+              <img src={wordmarkSrc} alt="" width={1290} height={515} className="h-5 w-auto" />
               <button type="button" onClick={closeMenu} className="cursor-pointer" aria-label={copy.nav.close}>
                 <X size={22} weight="light" />
               </button>

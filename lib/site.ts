@@ -12,7 +12,7 @@ export const SITE_URL = "www.formacr.com";
 
 export type SiteCopy = {
   nav: { features: string; contact: string; pricing: string; menu: string; close: string };
-  hero: { line: string; cta: string };
+  hero: { headline: string; line: string; cta: string };
   work: {
     title: string;
     slices: { id: string; image: string; alt: string; headline: string; body: string }[];
@@ -45,7 +45,8 @@ export const COPY: Record<Language, SiteCopy> = {
       close: "Close",
     },
     hero: {
-      line: "Memberships, payments, and clients. One desk.",
+      headline: "One desk for the whole gym.",
+      line: "Memberships, payments, and clients.",
       cta: "View Pricing",
     },
     work: {
@@ -126,7 +127,8 @@ export const COPY: Record<Language, SiteCopy> = {
       close: "Cerrar",
     },
     hero: {
-      line: "Membresías, pagos y clientes. Un solo escritorio.",
+      headline: "Un escritorio para todo el gimnasio.",
+      line: "Membresías, pagos y clientes.",
       cta: "Ver precios",
     },
     work: {
