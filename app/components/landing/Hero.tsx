@@ -64,14 +64,14 @@ export default function Hero() {
           <h1 className="max-w-[13ch] font-display text-[clamp(2.75rem,7vw,5.5rem)] uppercase leading-[0.92] tracking-[-0.02em] text-[#F0F0F0]">
             {copy.hero.headline}
           </h1>
-          <p className="mt-6 max-w-[34ch] font-serif text-lg leading-relaxed text-[#F0F0F0]/80 md:text-xl">
+          <p className="mt-6 max-w-[34ch] text-lg leading-relaxed text-[#F0F0F0]/80 md:text-xl">
             {copy.hero.line}
           </p>
           <a
             href="/pricing"
             className="group mt-10 inline-flex w-fit items-center gap-3 bg-[#F0F0F0] px-6 py-3 text-[#373737] transition-transform duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] active:scale-[0.98]"
           >
-            <span className="font-display text-[13px] uppercase tracking-[0.14em]">
+            <span className="text-[13px] font-medium uppercase tracking-[0.14em]">
               {copy.hero.cta}
             </span>
             <span className="flex h-7 w-7 items-center justify-center bg-[#373737]/10 transition-transform duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] group-hover:translate-x-0.5">

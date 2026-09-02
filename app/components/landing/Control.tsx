@@ -68,12 +68,12 @@ export default function Control() {
           <h2 className="font-display text-[clamp(1.8rem,3.4vw,3.6rem)] uppercase leading-[1.05] tracking-tight text-[var(--fg)]">
             {copy.control.headline}
           </h2>
-          <p className="mt-6 max-w-[34ch] font-serif text-lg leading-relaxed text-[color:color-mix(in_srgb,var(--fg)_75%,transparent)]">
+          <p className="mt-6 max-w-[34ch] text-lg leading-relaxed text-[color:color-mix(in_srgb,var(--fg)_75%,transparent)]">
             {copy.control.body}
           </p>
           <a
             href="/pricing"
-            className="mt-10 w-fit font-serif text-lg underline underline-offset-4 text-[var(--fg)]"
+            className="mt-10 w-fit text-lg underline underline-offset-4 text-[var(--fg)]"
           >
             {copy.control.link}
           </a>

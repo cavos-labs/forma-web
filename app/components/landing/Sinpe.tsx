@@ -58,7 +58,7 @@ export default function Sinpe() {
         <h2 className="max-w-[12ch] font-display text-[clamp(2rem,4.2vw,4.4rem)] uppercase leading-[0.95] tracking-tight text-[var(--paper)]">
           {copy.sinpe.headline}
         </h2>
-        <p className="mt-6 max-w-[32ch] font-serif text-lg leading-relaxed text-[var(--paper)]/75">
+        <p className="mt-6 max-w-[32ch] text-lg leading-relaxed text-[var(--paper)]/75">
           {copy.sinpe.body}
         </p>
       </div>

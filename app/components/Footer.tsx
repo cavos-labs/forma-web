@@ -18,18 +18,18 @@ export default function Footer() {
             height={345}
             className="h-8 w-auto"
           />
-          <p className="font-serif text-lg leading-snug text-[var(--fg)]">
+          <p className="text-lg leading-snug text-[var(--fg)]">
             {copy.footer.tagline}
           </p>
         </div>
 
-        <div className="space-y-2 font-serif text-sm text-[color:color-mix(in_srgb,var(--fg)_72%,transparent)]">
+        <div className="space-y-2 text-sm text-[color:color-mix(in_srgb,var(--fg)_72%,transparent)]">
           <div>{PHONE_DISPLAY}</div>
           <div>{EMAIL}</div>
           <div>{LOCATION}</div>
         </div>
 
-        <div className="space-y-2 font-serif text-sm">
+        <div className="space-y-2 text-sm">
           <Link href="/privacy" className="block underline underline-offset-4">
             {copy.footer.privacy}
           </Link>
@@ -40,10 +40,10 @@ export default function Footer() {
       </div>
 
       <div className="mx-auto mt-16 max-w-[1400px] space-y-4 border-t border-[color:color-mix(in_srgb,var(--fg)_18%,transparent)] pt-8">
-        <p className="max-w-3xl font-serif text-xs leading-relaxed text-[color:color-mix(in_srgb,var(--fg)_55%,transparent)]">
+        <p className="max-w-3xl text-xs leading-relaxed text-[color:color-mix(in_srgb,var(--fg)_55%,transparent)]">
           {copy.footer.whatsappPolicy}
         </p>
-        <p className="font-serif text-xs text-[color:color-mix(in_srgb,var(--fg)_45%,transparent)]">
+        <p className="text-xs text-[color:color-mix(in_srgb,var(--fg)_45%,transparent)]">
           © 2026 FORMA Costa Rica. {copy.footer.rights}
         </p>
       </div>

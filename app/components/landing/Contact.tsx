@@ -58,7 +58,7 @@ export default function Contact() {
           {copy.contact.headline}
         </h2>
         <div className="contact-rest">
-          <p className="mt-6 font-serif text-lg text-[color:color-mix(in_srgb,var(--fg)_80%,transparent)] md:text-xl">
+          <p className="mt-6 text-lg text-[color:color-mix(in_srgb,var(--fg)_80%,transparent)] md:text-xl">
             {copy.contact.body}
           </p>
           <a
@@ -67,17 +67,17 @@ export default function Contact() {
             rel="noopener noreferrer"
             className="group mt-10 inline-flex items-center gap-3 bg-[var(--fg)] px-6 py-3 text-[var(--bg)] transition-transform duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] active:scale-[0.98]"
           >
-            <span className="font-display text-[13px] uppercase tracking-[0.14em]">
+            <span className="text-[13px] font-medium uppercase tracking-[0.14em]">
               {copy.contact.cta}
             </span>
             <span className="flex h-7 w-7 items-center justify-center bg-[var(--bg)]/10 transition-transform duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] group-hover:translate-x-0.5">
               <ArrowRight size={14} weight="light" />
             </span>
           </a>
-          <p className="mt-6 font-serif text-sm text-[color:color-mix(in_srgb,var(--fg)_55%,transparent)]">
+          <p className="mt-6 text-sm text-[color:color-mix(in_srgb,var(--fg)_55%,transparent)]">
             {PHONE_DISPLAY}
           </p>
-          <p className="mx-auto mt-8 max-w-lg font-serif text-xs leading-relaxed text-[color:color-mix(in_srgb,var(--fg)_45%,transparent)]">
+          <p className="mx-auto mt-8 max-w-lg text-xs leading-relaxed text-[color:color-mix(in_srgb,var(--fg)_45%,transparent)]">
             {copy.contact.consent}{" "}
             <a href="/privacy" className="underline underline-offset-2">
               {copy.footer.privacy}

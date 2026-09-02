@@ -110,7 +110,7 @@ export default function Header({
               <a
                 key={link.href}
                 href={link.href}
-                className="font-display text-[13px] uppercase tracking-[0.14em] transition-opacity duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] hover:opacity-60"
+                className="text-[13px] font-medium uppercase tracking-[0.14em] transition-opacity duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] hover:opacity-60"
                 onClick={(event) => {
                   if (link.href.startsWith("/#")) {
                     event.preventDefault();
@@ -136,7 +136,7 @@ export default function Header({
             )}
 
             {setLanguage && (
-              <div className="flex items-center gap-1 font-serif text-sm">
+              <div className="flex items-center gap-1 text-sm">
                 <button
                   type="button"
                   onClick={() => setLanguage("EN")}
@@ -191,7 +191,7 @@ export default function Header({
                 <a
                   key={link.href}
                   href={link.href}
-                  className="font-display text-4xl uppercase leading-none"
+                  className="text-4xl font-medium uppercase leading-none tracking-[-0.02em]"
                   onClick={(event) => {
                     if (link.href.startsWith("/#")) {
                       event.preventDefault();

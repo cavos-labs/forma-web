@@ -33,23 +33,18 @@
   --color-background: var(--bg);
   --color-foreground: var(--fg);
   --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-  --font-serif: var(--font-source-serif);
   --font-display: "Romagothic", sans-serif;
 }
 
 body {
   background: var(--bg);
   color: var(--fg);
-  font-family: var(--font-sans), sans-serif;
+  font-family: var(--font-geist-sans), sans-serif;
+  letter-spacing: -0.04em;
 }
 
 .font-display {
   font-family: var(--font-display);
-}
-
-.font-serif {
-  font-family: var(--font-source-serif), Georgia, "Times New Roman", serif;
 }
 
 h1, h2, h3 {
