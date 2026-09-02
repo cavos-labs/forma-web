@@ -40,7 +40,16 @@ body {
   background: var(--bg);
   color: var(--fg);
   font-family: var(--font-geist-sans), sans-serif;
-  letter-spacing: -0.04em;
+}
+
+/* em tracking resolves against the declaring element, so a single body rule
+   would inherit one flat px value into every size. */
+@layer base {
+  *,
+  ::before,
+  ::after {
+    letter-spacing: -0.04em;
+  }
 }
 
 .font-display {

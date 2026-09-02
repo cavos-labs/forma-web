@@ -54,7 +54,7 @@ export default function Header({
 
   const fg = dark ? "#F0F0F0" : "#373737";
   const bg = dark ? "#373737" : "#F0F0F0";
-  const wordmarkSrc = dark ? "/images/forma-logo-white.png" : "/images/forma-logo-black.png";
+  const iconSrc = dark ? "/images/forma-icon-white.png" : "/images/forma-icon-black.png";
 
   const links = [
     { label: copy.nav.features, href: "/#features" },
@@ -102,7 +102,7 @@ export default function Header({
           style={{ color: fg }}
         >
           <a href="/" className="flex items-center" aria-label="FORMA">
-            <img src={wordmarkSrc} alt="" width={1290} height={515} className="h-5 w-auto md:h-6" />
+            <img src={iconSrc} alt="" width={320} height={345} className="h-6 w-auto md:h-7" />
           </a>
 
           <div className="hidden items-center gap-8 lg:flex">
@@ -110,7 +110,7 @@ export default function Header({
               <a
                 key={link.href}
                 href={link.href}
-                className="text-[13px] font-medium uppercase tracking-[0.14em] transition-opacity duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] hover:opacity-60"
+                className="text-[13px] font-medium uppercase transition-opacity duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] hover:opacity-60"
                 onClick={(event) => {
                   if (link.href.startsWith("/#")) {
                     event.preventDefault();
@@ -181,7 +181,7 @@ export default function Header({
             style={{ backgroundColor: bg, color: fg }}
           >
             <div className="flex items-center justify-between border-b px-6 py-6" style={{ borderColor: `${fg}22` }}>
-              <img src={wordmarkSrc} alt="" width={1290} height={515} className="h-5 w-auto" />
+              <img src={iconSrc} alt="" width={320} height={345} className="h-6 w-auto" />
               <button type="button" onClick={closeMenu} className="cursor-pointer" aria-label={copy.nav.close}>
                 <X size={22} weight="light" />
               </button>
@@ -191,7 +191,7 @@ export default function Header({
                 <a
                   key={link.href}
                   href={link.href}
-                  className="text-4xl font-medium uppercase leading-none tracking-[-0.02em]"
+                  className="text-4xl font-medium uppercase leading-none"
                   onClick={(event) => {
                     if (link.href.startsWith("/#")) {
                       event.preventDefault();
