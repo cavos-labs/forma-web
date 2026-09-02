@@ -1,75 +1,106 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef } from "react";
 import Image from "next/image";
-import { gsap, useGSAP } from "../gsap-register";
+import { gsap, refreshWhenImagesLoad, useGSAP } from "../gsap-register";
 import { useSite } from "../SiteProvider";
-import { Reveal } from "../Reveal";
 
 export default function WorkSlices() {
   const { copy } = useSite();
-  const [active, setActive] = useState(0);
-  const list = useRef<HTMLDivElement>(null);
+  const root = useRef<HTMLElement>(null);
   const slices = copy.work.slices;
 
   useGSAP(
     () => {
+      const frame = root.current;
+      if (!frame) return;
+      refreshWhenImagesLoad(frame);
+
+      const cards = gsap.utils.toArray<HTMLElement>(".stack-card");
       const mm = gsap.matchMedia();
+
       mm.add("(min-width: 768px) and (prefers-reduced-motion: no-preference)", () => {
-        const items = gsap.utils.toArray<HTMLElement>(".work-slice");
-        items.forEach((item, index) => {
-          gsap.to(item, {
-            flexGrow: index === active ? 1.7 : 1,
-            duration: 0.75,
+        cards.forEach((card, index) => {
+          gsap.from(card.querySelector(".stack-copy"), {
+            y: 40,
+            duration: 1,
             ease: "power3.out",
+            immediateRender: false,
+            scrollTrigger: {
+              trigger: card,
+              start: index === 0 ? "top 90%" : "top 75%",
+              once: true,
+              refreshPriority: 1,
+            },
+          });
+          if (index === cards.length - 1) return;
+          gsap.to(card, {
+            scale: 0.92,
+            transformOrigin: "center top",
+            ease: "none",
+            scrollTrigger: {
+              trigger: cards[index + 1],
+              start: "top bottom",
+              end: "top top",
+              scrub: true,
+              refreshPriority: 1,
+            },
           });
         });
       });
+
+      mm.add("(max-width: 767px) and (prefers-reduced-motion: no-preference)", () => {
+        cards.forEach((card) => {
+          gsap.from(card.querySelector(".stack-copy"), {
+            y: 32,
+            duration: 0.9,
+            ease: "power3.out",
+            immediateRender: false,
+            scrollTrigger: {
+              trigger: card,
+              start: "top 75%",
+              once: true,
+              refreshPriority: 1,
+            },
+          });
+        });
+      });
+      return () => mm.revert();
     },
-    { scope: list, dependencies: [active] }
+    { scope: root, dependencies: [copy.work.title], revertOnUpdate: true }
   );
 
   return (
-    <section id="features" className="bg-[var(--bg)] px-4 py-24 md:px-8 md:py-32">
-      <Reveal>
-        <p className="mx-auto mb-8 max-w-[1400px] font-serif text-xl text-[var(--fg)] md:text-2xl">
-          {copy.work.title}
-        </p>
-      </Reveal>
-
-      <div
-        ref={list}
-        className="mx-auto flex max-w-[1400px] flex-col gap-3 md:h-[72vh] md:flex-row md:gap-0"
-      >
-        {slices.map((slice, index) => (
-          <button
-            key={slice.id}
-            type="button"
-            className="work-slice relative min-h-[42vh] w-full flex-1 cursor-pointer overflow-hidden text-left md:min-h-0"
-            onMouseEnter={() => setActive(index)}
-            onFocus={() => setActive(index)}
-            onClick={() => setActive(index)}
-          >
-            <Image
-              src={slice.image}
-              alt={slice.alt}
-              fill
-              className="object-cover"
-              sizes="(min-width: 768px) 28vw, 100vw"
-            />
-            <span className="absolute inset-0 bg-[#373737]/25" />
-          </button>
-        ))}
-
-        <div className="flex min-h-[28vh] flex-[1.35] flex-col justify-end bg-[var(--paper)] p-6 md:min-h-0 md:p-10">
-          <h2 className="font-display text-[clamp(1.7rem,3.2vw,3.4rem)] uppercase leading-[1.05] tracking-tight text-[var(--ink)]">
-            {slices[active].headline}
-          </h2>
-          <p className="mt-5 max-w-[36ch] font-serif text-base leading-relaxed text-[var(--ink)]/75">
-            {slices[active].body}
-          </p>
-        </div>
-      </div>
+    <section id="features" ref={root} className="relative bg-[var(--bg)]">
+      {slices.map((slice, index) => (
+        <article
+          key={slice.id}
+          className="stack-card relative min-h-[100dvh] overflow-hidden md:sticky md:top-0"
+          style={{ zIndex: index + 1 }}
+        >
+          <Image
+            src={slice.image}
+            alt={slice.alt}
+            fill
+            className="object-cover"
+            sizes="100vw"
+          />
+          <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(55,55,55,0.15)_0%,rgba(55,55,55,0.72)_100%)]" />
+          <div className="stack-copy relative z-10 mx-auto flex min-h-[100dvh] max-w-[1400px] flex-col justify-end px-4 pb-16 md:px-8 md:pb-20">
+            {index === 0 && (
+              <p className="mb-6 font-serif text-xl text-[#F0F0F0] md:text-2xl">
+                {copy.work.title}
+              </p>
+            )}
+            <h2 className="max-w-[16ch] font-display text-[clamp(1.8rem,4vw,3.8rem)] uppercase leading-[1.05] tracking-tight text-[#F0F0F0]">
+              {slice.headline}
+            </h2>
+            <p className="mt-5 max-w-[36ch] font-serif text-base leading-relaxed text-[#F0F0F0]/80 md:text-lg">
+              {slice.body}
+            </p>
+          </div>
+        </article>
+      ))}
     </section>
   );
 }

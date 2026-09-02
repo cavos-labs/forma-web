@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { List, Moon, Sun, X } from "@phosphor-icons/react";
 import { COPY, type Language } from "@/lib/site";
+import { ScrollTrigger, useGSAP } from "./gsap-register";
 import { useOptionalSite } from "./SiteProvider";
 
 export type HeaderProps = {
@@ -33,6 +34,23 @@ export default function Header({
 
   const [menuOpen, setMenuOpen] = useState(false);
   const [menuClosing, setMenuClosing] = useState(false);
+  const [solid, setSolid] = useState(false);
+
+  useGSAP(
+    () => {
+      if (!overlay) return;
+      const trigger = document.querySelector("[data-nav-solid]");
+      if (!trigger) return;
+      ScrollTrigger.create({
+        trigger,
+        start: "top 64px",
+        refreshPriority: 20,
+        onEnter: () => setSolid(true),
+        onLeaveBack: () => setSolid(false),
+      });
+    },
+    { dependencies: [overlay] }
+  );
 
   const fg = dark ? "#F0F0F0" : "#373737";
   const bg = dark ? "#373737" : "#F0F0F0";
@@ -75,7 +93,9 @@ export default function Header({
   return (
     <>
       <header
-        className={`${overlay ? "absolute inset-x-0 top-0" : "relative"} z-40`}
+        className={`z-40 ${
+          overlay ? "fixed inset-x-0 top-0 transition-[background-color] duration-500 ease-[cubic-bezier(0.32,0.72,0,1)]" : "relative"
+        } ${overlay && solid ? "bg-[#373737]/90" : ""}`}
       >
         <nav
           className="mx-auto flex h-16 max-w-[1400px] items-center justify-between px-4 md:h-[72px] md:px-8"
