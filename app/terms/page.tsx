@@ -1,26 +1,19 @@
 'use client'
 
-import { useState, useEffect } from "react";
-import Header from "../components/Header";
+import { MarketingShell } from "../components/MarketingShell";
+import { useSite } from "../components/SiteProvider";
 
 export default function Terms() {
-  const [currentLanguage, setCurrentLanguage] = useState<'EN' | 'ES'>('EN');
-  const [isDark, setIsDark] = useState(true);
+  return (
+    <MarketingShell>
+      <TermsBody />
+    </MarketingShell>
+  );
+}
 
-  useEffect(() => {
-    // Detect browser language on mount
-    const browserLanguage = navigator.language || navigator.languages[0];
-    const isSpanish = browserLanguage.toLowerCase().startsWith('es');
-    setCurrentLanguage(isSpanish ? 'ES' : 'EN');
-  }, []);
-
-  const handleLanguageChange = (language: 'EN' | 'ES') => {
-    setCurrentLanguage(language);
-  };
-
-  const handleThemeToggle = () => {
-    setIsDark(!isDark);
-  };
+function TermsBody() {
+  const { language: currentLanguage, theme } = useSite();
+  const isDark = theme === "dark";
 
   const themeColors = {
     bg: isDark ? '#373737' : '#F0F0F0',
@@ -29,13 +22,7 @@ export default function Terms() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ backgroundColor: themeColors.bg }}>
-      <Header 
-        currentLanguage={currentLanguage} 
-        onLanguageChange={handleLanguageChange}
-        isDark={isDark}
-        onThemeToggle={handleThemeToggle}
-      />
+    <div className="min-h-screen flex flex-col">
 
       {/* Main Content */}
       <main className="flex-1 px-6 lg:px-8 py-12">
